@@ -2,6 +2,7 @@
   "name": "chat-app",
   "version": "1.0.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "ws-server": "npm --prefix ws-server run ws-server",
+    "api-server": "npm --prefix api-server run api-server"
   }
 }

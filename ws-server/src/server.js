@@ -29,15 +29,13 @@ const io = new Server(server, {
 });
 
 // User Management
-activeUsers = []
+activeUsersMap = {}
 const addUser =  async (userId, socketId, userName) => {
-    const checkUser = activeUsers.some(u => u.userId === userId);
-    if (!checkUser){
-        activeUsers.push({ userId, socketId, userName });
-    }
+    if (userId in activeUsersMap) return;
+    activeUsersMap[userId] = { userId, socketId, userName };
 }
 const removeUser = async (userId) => {
-    activeUsers = activeUsers.filter(u => u.userId !== userId);
+    delete activeUsersMap[userId];
 };
 
 io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
@@ -47,14 +45,14 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
     logger.info(`Receive CLIENT_USER_JOINED from ${userId}`);
 
     await addUser(userId, socketId, userName);
-    socket.emit(EVENT.SERVER_ACTIVE_USERS, activeUsers)
+    socket.emit(EVENT.SERVER_ACTIVE_USERS, Object.values(activeUsersMap));
     socket.broadcast.emit(EVENT.SERVER_USER_JOINED, { senderId: userId });
 
     socket.on(EVENT.CLIENT_USER_TYPING, (data) => {
         const { senderId, receiverIds, chatId } = data;
         logger.info(`Receive CLIENT_USER_TYPING from ${senderId}`);
         receiverIds.forEach(ruid => {
-            const receiver = activeUsers.find(u=>u.userId === ruid)
+            const receiver = activeUsersMap[ruid]
             if(receiver){
                 socket.to(receiver.socketId).emit(EVENT.SERVER_USER_TYPING, data);
             }
@@ -65,7 +63,7 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
         const { senderId, receiverIds, message } = data;
         logger.info(`Receive CLIENT_MESSAGE_SENT from ${senderId}`);
         receiverIds.forEach(ruid => {
-            const receiver = activeUsers.find(u=>u.userId === ruid)
+            const receiver = activeUsersMap[ruid]
             if(receiver){
                 socket.to(receiver.socketId).emit(EVENT.SERVER_MESSAGE_SENT, data);
             }
@@ -76,7 +74,7 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
         const { senderId, receiverIds, message } = data;
         logger.info(`Receive CLIENT_MESSAGE_UPDATED from ${senderId}`);
         receiverIds.forEach(ruid => {
-            const receiver = activeUsers.find(u=>u.userId === ruid)
+            const receiver = activeUsersMap[ruid]
             if(receiver){
                 socket.to(receiver.socketId).emit(EVENT.SERVER_MESSAGE_UPDATED, data);
             }

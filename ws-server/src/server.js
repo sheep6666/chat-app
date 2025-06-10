@@ -2,7 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const Redis = require('ioredis');
 const logger = require('./config/logger');
+
+const redis = new Redis(process.env.REDIS_URL);
 
 const PORT = 8000;
 const EVENT = {
@@ -29,65 +32,115 @@ const io = new Server(server, {
 });
 
 // User Management
-activeUsersMap = {}
-const addUser =  async (userId, socketId, userName) => {
-    if (userId in activeUsersMap) return;
-    activeUsersMap[userId] = { userId, socketId, userName };
-}
-const removeUser = async (userId) => {
-    delete activeUsersMap[userId];
+const getActiveUsers = async () => {
+  const keys = await redis.keys('user:*');
+  const users = [];
+  for (const key of keys) {
+    const data = await redis.hgetall(key);
+    if (Object.keys(data).length > 0) {
+      users.push(data);
+    }
+  }
+  return users;
 };
 
+const addUser = async (userId, socketId, userName) => {
+  const key = `user:${userId}`;
+  await redis.hmset(key, { userName, userId, socketId });
+  await redis.expire(key, 300); // 自動過期，防止殘留
+  logger.info(`Add user to Redis: ${key}`);
+};
+
+const removeUser = async (userId) => {
+  const key = `user:${userId}`;
+  await redis.del(key);
+  logger.info(`Remove user from Redis: ${key}`);
+};
+
+const getUser = async (userId) => {
+  return await redis.hgetall(`user:${userId}`);
+};
+
+// WebSocket event handlers
 io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
     const socketId = socket.id;
     const userId = socket.handshake.auth.userId;
     const userName = socket.handshake.auth.userName;
-    logger.info(`Receive CLIENT_USER_JOINED from ${userId}`);
+    logger.info(`Receive CLIENT_USER_JOINED from ${userName}`);
 
     await addUser(userId, socketId, userName);
-    socket.emit(EVENT.SERVER_ACTIVE_USERS, Object.values(activeUsersMap));
+    try {
+      const users = await getActiveUsers();
+      socket.emit(EVENT.SERVER_ACTIVE_USERS, users);
+    } catch (err) {
+      logger.error(`Failed to get active users: ${err}`);
+      socket.emit(EVENT.SERVER_ACTIVE_USERS, []);
+    }
     socket.broadcast.emit(EVENT.SERVER_USER_JOINED, { senderId: userId });
 
-    socket.on(EVENT.CLIENT_USER_TYPING, (data) => {
+    socket.on(EVENT.CLIENT_USER_TYPING, async (data) => {
         const { senderId, receiverIds, chatId } = data;
-        logger.info(`Receive CLIENT_USER_TYPING from ${senderId}`);
-        receiverIds.forEach(ruid => {
-            const receiver = activeUsersMap[ruid]
-            if(receiver){
+        const sender = await getUser(senderId);
+        logger.info(`Receive CLIENT_USER_TYPING from ${sender.userName}`);
+
+        for (const uid of receiverIds) {
+            const receiver = await getUser(uid);
+            if(receiver?.socketId){
                 socket.to(receiver.socketId).emit(EVENT.SERVER_USER_TYPING, data);
             }
-        });
+        };
     });
 
-    socket.on(EVENT.CLIENT_MESSAGE_SENT, (data) => {
+    socket.on(EVENT.CLIENT_MESSAGE_SENT, async (data) => {
         const { senderId, receiverIds, message } = data;
-        logger.info(`Receive CLIENT_MESSAGE_SENT from ${senderId}`);
-        receiverIds.forEach(ruid => {
-            const receiver = activeUsersMap[ruid]
-            if(receiver){
+        const sender = await getUser(senderId);
+        logger.info(`Receive CLIENT_MESSAGE_SENT from ${sender.userName}`);
+
+        for (const uid of receiverIds) {
+            const receiver = await getUser(uid);
+            if(receiver?.socketId){
                 socket.to(receiver.socketId).emit(EVENT.SERVER_MESSAGE_SENT, data);
             }
-        });
+        };
     });
 
-    socket.on(EVENT.CLIENT_MESSAGE_UPDATED, (data) => {
+    socket.on(EVENT.CLIENT_MESSAGE_UPDATED, async (data) => {
         const { senderId, receiverIds, message } = data;
-        logger.info(`Receive CLIENT_MESSAGE_UPDATED from ${senderId}`);
-        receiverIds.forEach(ruid => {
-            const receiver = activeUsersMap[ruid]
-            if(receiver){
+        const sender = await getUser(senderId);
+        logger.info(`Receive CLIENT_MESSAGE_UPDATED from ${sender.userName}`);
+
+        for (const uid of receiverIds) {
+            const receiver = await getUser(uid);
+            if(receiver?.socketId){
                 socket.to(receiver.socketId).emit(EVENT.SERVER_MESSAGE_UPDATED, data);
             }
-        });
+        };
     });
 
     socket.on(EVENT.CLIENT_USER_LEFT, () => {
-        logger.info(`Receive CLIENT_USER_LEFT from ${userId}`);
+        logger.info(`Receive CLIENT_USER_LEFT from ${userName}`);
         removeUser(userId)
         socket.broadcast.emit(EVENT.SERVER_USER_LEFT, { senderId: userId });
     });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-    logger.info(`Socket.IO server is running on port ${PORT}`);
+
+let serverStarted = false;
+redis.on('ready', () => {
+  logger.info('Redis is ready.');
+
+  if (!serverStarted) {
+    server.listen(PORT, '0.0.0.0', () => {
+        serverStarted = true;
+        logger.info(`Socket.IO server is running on port ${PORT}`);
+    });
+    }
+});
+
+redis.on('error', (err) => {
+  logger.error(`Redis connection error: ${err}`);
+});
+
+redis.on('reconnecting', () => {
+  logger.warn('Redis reconnecting...');
 });

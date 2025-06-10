@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const logger = require('./config/logger');
 
 const PORT = 8000;
 const EVENT = {
@@ -43,16 +44,15 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
     const socketId = socket.id;
     const userId = socket.handshake.auth.userId;
     const userName = socket.handshake.auth.userName;
-    console.log(`Client connected, socketId:`, socketId);
+    logger.info(`Receive CLIENT_USER_JOINED from ${userId}`);
 
     await addUser(userId, socketId, userName);
-    console.log("activeUsers", activeUsers)
     socket.emit(EVENT.SERVER_ACTIVE_USERS, activeUsers)
     socket.broadcast.emit(EVENT.SERVER_USER_JOINED, { senderId: userId });
 
     socket.on(EVENT.CLIENT_USER_TYPING, (data) => {
         const { senderId, receiverIds, chatId } = data;
-        console.log(`Receive CLIENT_USER_TYPING from ${senderId}`);
+        logger.info(`Receive CLIENT_USER_TYPING from ${senderId}`);
         receiverIds.forEach(ruid => {
             const receiver = activeUsers.find(u=>u.userId === ruid)
             if(receiver){
@@ -63,7 +63,7 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
 
     socket.on(EVENT.CLIENT_MESSAGE_SENT, (data) => {
         const { senderId, receiverIds, message } = data;
-        console.log(`Receive CLIENT_MESSAGE_SENT from ${senderId}`);
+        logger.info(`Receive CLIENT_MESSAGE_SENT from ${senderId}`);
         receiverIds.forEach(ruid => {
             const receiver = activeUsers.find(u=>u.userId === ruid)
             if(receiver){
@@ -74,7 +74,7 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
 
     socket.on(EVENT.CLIENT_MESSAGE_UPDATED, (data) => {
         const { senderId, receiverIds, message } = data;
-        console.log(`Receive CLIENT_MESSAGE_UPDATED from ${senderId}`);
+        logger.info(`Receive CLIENT_MESSAGE_UPDATED from ${senderId}`);
         receiverIds.forEach(ruid => {
             const receiver = activeUsers.find(u=>u.userId === ruid)
             if(receiver){
@@ -84,12 +84,12 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
     });
 
     socket.on(EVENT.CLIENT_USER_LEFT, () => {
-        console.log(`Client disconnected, socketId:`, socketId);
+        logger.info(`Receive CLIENT_USER_LEFT from ${userId}`);
         removeUser(userId)
         socket.broadcast.emit(EVENT.SERVER_USER_LEFT, { senderId: userId });
     });
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Socket.IO server is running on port ${PORT}`);
+    logger.info(`Socket.IO server is running on port ${PORT}`);
 });

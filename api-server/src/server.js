@@ -5,6 +5,8 @@ const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 // Custom modules
 const databaseConnect = require('./config/database');
 const logger = require('./config/logger');
@@ -30,6 +32,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 // API route registrations
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 app.use('/api/messenger', messengerRoutes);
 
@@ -41,4 +44,5 @@ databaseConnect();
 
 app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server is running on port ${PORT}`);
+  logger.info(`Swagger docs at http://localhost:${PORT}/api-docs`);
 });

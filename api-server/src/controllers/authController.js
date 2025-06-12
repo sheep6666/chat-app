@@ -59,7 +59,7 @@ module.exports.registerUser = async (req, res) => {
         }
         
         const { userName, email, password } = req.body;
-        const avatar = req.file ? req.file.filename : `default.jpg`;
+        const avatar = req.file ? req.file.filename : `default_avatar.jpg`;
 
         // Check if the user exists
         const existingUser = await User.findOne({ email });

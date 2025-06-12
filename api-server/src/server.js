@@ -2,6 +2,7 @@
 require('dotenv').config({ path: './.env' });
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 // Custom modules
@@ -13,6 +14,12 @@ const messengerRoutes = require('./routes/messengerRoutes');
 
 const PORT = 5001;
 const app = express();
+
+// CORS setup - allows front-end origin and credentials
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
 
 // Middlewares
 app.use(morgan(':method :url :status :response-time ms', { 

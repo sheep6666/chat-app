@@ -1,6 +1,7 @@
 // Load environment variables from config file
 require('dotenv').config({ path: './.env' });
 const express = require('express');
+const path = require('path');
 const databaseConnect = require('./config/database');
 
 // Route modules
@@ -16,6 +17,9 @@ app.use(express.json());
 // API route registrations
 app.use('/api/auth', authRoutes);
 app.use('/api/messenger', messengerRoutes);
+
+// Static file serving (e.g. uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Connect to MongoDB database
 databaseConnect();

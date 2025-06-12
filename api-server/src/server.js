@@ -3,6 +3,7 @@ require('dotenv').config({ path: './.env' });
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const morgan = require('morgan');
 // Custom modules
 const databaseConnect = require('./config/database');
 const logger = require('./config/logger');
@@ -14,6 +15,10 @@ const PORT = 5001;
 const app = express();
 
 // Middlewares
+app.use(morgan(':method :url :status :response-time ms', { 
+  stream: logger.stream,
+  skip: (req, res) => res.statusCode < 100
+}));
 app.use(cookieParser());
 app.use(express.json());
 

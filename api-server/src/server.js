@@ -2,6 +2,7 @@
 require('dotenv').config({ path: './.env' });
 const express = require('express');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 // Custom modules
 const databaseConnect = require('./config/database');
 const logger = require('./config/logger');
@@ -13,6 +14,7 @@ const PORT = 5001;
 const app = express();
 
 // Middlewares
+app.use(cookieParser());
 app.use(express.json());
 
 // API route registrations

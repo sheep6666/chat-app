@@ -2,8 +2,9 @@
 require('dotenv').config({ path: './.env' });
 const express = require('express');
 const path = require('path');
+// Custom modules
 const databaseConnect = require('./config/database');
-
+const logger = require('./config/logger');
 // Route modules
 const authRoutes = require('./routes/authRoutes');
 const messengerRoutes = require('./routes/messengerRoutes');
@@ -25,5 +26,5 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 databaseConnect();
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
 });

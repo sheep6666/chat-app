@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const logger = require('../config/logger');
 
 module.exports.registerUser = async (req, res) => {
     try {
@@ -18,7 +19,7 @@ module.exports.registerUser = async (req, res) => {
             data: newUser
         });
     } catch (error) {
-        console.error(error);
+        logger.error(`Register error: ${error.message}`);
         return res.status(500).json({
             errors: { errorMessage: ["Server error during registration"] }
         });
@@ -34,7 +35,7 @@ module.exports.loginUser = async (req, res) => {
             user
         });
     } catch (error) {
-        console.error(error);
+        logger.error(`Login error: ${error.message}`);
         return res.status(500).json({
             errors: { errorMessage: ["Server error during registration"] }
         });

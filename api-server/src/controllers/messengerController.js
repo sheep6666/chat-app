@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Message = require('../models/Message');
 const Chat = require('../models/Chat');
+const logger = require('../config/logger');
 
 module.exports.getUsers = async (req, res) => {
     try {
@@ -14,7 +15,7 @@ module.exports.getUsers = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(`Error retrieving users: ${error.message}`);
+        logger.error(`Failed to fetch users: ${error.message}`);
         res.status(500).json({
             error: { errorMessage: 'Server Error' }
         });
@@ -22,14 +23,22 @@ module.exports.getUsers = async (req, res) => {
 };
 
 module.exports.getChats = async (req, res) => {
-    const chats = await Chat.find()
-        .populate('members', '_id userName avatar')
-        .populate('lastMessage', 'senderId content type status')
-        .lean();
-    res.status(200).json({
-        success: true,
-        data: chats
-    }); 
+    try {
+        const chats = await Chat.find()
+            .populate('members', '_id userName avatar')
+            .populate('lastMessage', 'senderId content type status')
+            .lean();
+        res.status(200).json({
+            success: true,
+            data: chats
+        }); 
+    }
+    catch (error) {
+        logger.error(`Failed to fetch chats: ${error.message}`);
+        res.status(500).json({
+            error: { errorMessage: 'Server Error' }
+        });
+    }
 };
 
 module.exports.getChatMessages = async (req, res) => {
@@ -52,6 +61,7 @@ module.exports.getChatMessages = async (req, res) => {
         });
     }
     catch (error) {
+        logger.error(`Failed to fetch messages for chat ${req.params.id}: ${error.message}`);
         return res.status(500).json({
             error: { errorMessage: 'Server Error' }
         });
@@ -74,7 +84,7 @@ module.exports.createChat = async (req, res) => {
             data: newChat
         });
     } catch (error) {
-        console.error(error);
+        logger.error(`Failed to create chat: ${error.message}`);
         return res.status(500).json({
             errors: { errorMessage: ["Server error"] }
         });
@@ -100,7 +110,7 @@ module.exports.createMessage = async (req, res) => {
             data: message
         });
     } catch (error) {
-        console.error(error);
+        logger.error(`Failed to create message: ${error.message}`);
         return res.status(500).json({
             errors: { errorMessage: ["Server error during registration"] }
         });
@@ -122,6 +132,7 @@ module.exports.updateMessageStatus = async (req, res) => {
             data: message
         });
     } catch (error) {
+        logger.error(`Failed to update message status: ${req.params.id} ${error.message}`);
         res.status(500).json({
             success: false,
             message: 'Server error while updating message status',

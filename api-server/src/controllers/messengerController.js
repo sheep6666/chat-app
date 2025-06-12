@@ -97,7 +97,7 @@ module.exports.createMessage = async (req, res) => {
         const message = await Message.create({
             chatId: chatId,
             senderId: senderId,
-            content: content,
+            content: type === 'text' ? content : req.file.filename,
             type: type
         });
 

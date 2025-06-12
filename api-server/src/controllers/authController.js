@@ -1,10 +1,11 @@
+const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const logger = require('../config/logger');
 
 module.exports.registerUser = async (req, res) => {
     try {
         const { userName, email, password } = req.body;
-        const avatar = `default.jpg`;
+        const avatar = req.file ? req.file.filename : `default.jpg`;
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({

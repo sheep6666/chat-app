@@ -4,13 +4,12 @@ import { FaEdit, FaEllipsisH, FaSistrix, FaSignOutAlt } from 'react-icons/fa';
 import ChatCard from './ChatCard'
 import { userLogout } from '../store/authSlice';
 
-const ChatSidebar = ({ currentUser, chatUsers }) => {
+const ChatSidebar = ({ currentUser, chatUsers, theme, handleSetTheme }) => {
     const dispatch = useDispatch();
 
     const [isThemeMenuVisible, setIsThemeMenuVisible] = useState(false);
     const toggleThemeMenu = () =>{ setIsThemeMenuVisible(!isThemeMenuVisible) };
     const handleLogoutClick = () =>{dispatch(userLogout())};
-    const handleThemeChange = (e) => {};
     return (
         <div className="left-side">
             <div className="top">
@@ -40,19 +39,19 @@ const ChatSidebar = ({ currentUser, chatUsers }) => {
                                 value="dark"
                                 name="theme"
                                 id="dark"
-                                onChange={handleThemeChange}
-                                checked={true}
+                                onChange={handleSetTheme}
+                                checked={theme === 'dark'}
                             />
                         </div>
                         <div className="off">
-                            <label htmlFor="white">OFF</label>
+                            <label htmlFor="light">OFF</label>
                             <input
                                 type="radio"
-                                value="white"
+                                value="light"
                                 name="theme"
-                                id="white"
-                                onChange={handleThemeChange}
-                                checked={false}
+                                id="light"
+                                onChange={handleSetTheme}
+                                checked={theme === 'light'}
                             />
                         </div>
                         <div className="logout" onClick={handleLogoutClick}>

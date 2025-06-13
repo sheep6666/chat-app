@@ -27,7 +27,6 @@ const ChatHistory = ({ socket, currentUser, selectedUser, messages }) => {
     if (!messages || messages.length === 0) return;
 
     const lastMsg = messages[messages.length - 1]
-    console.log("lastMsg:", lastMsg)
     if (lastMsg.status === 'seen') return;
 
     if (lastMsg.senderId !== currentUser._id) {
@@ -72,7 +71,7 @@ const ChatHistory = ({ socket, currentUser, selectedUser, messages }) => {
                     </p>
                     <div className="time-status">
                     {/* 訊息時間展示 */}
-                    <p className="time">{msg.createdAt}</p>
+                    <p className="time">{moment(msg.createdAt).startOf('mini').fromNow()}</p>
 
                     {/* 在最後一則訊息下方，展示已讀狀態 */}
                     {
@@ -108,7 +107,7 @@ const ChatHistory = ({ socket, currentUser, selectedUser, messages }) => {
                         }
                       </p>
                     </div>
-                    <p className="time">{msg.createdAt}</p>
+                    <p className="time">{moment(msg.createdAt).startOf('mini').fromNow()}</p>
                   </div>
                 </div>
               </div>

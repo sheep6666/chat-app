@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import useSound from 'use-sound'
 import {io} from 'socket.io-client';
+import toast, { Toaster } from 'react-hot-toast';
 import ChatSidebar from './ChatSidebar'; 
 import ChatBody from './ChatBody';
 import { 
@@ -13,20 +15,24 @@ import {
     updateCurrentMessage,
     updateChatLastMessage,
     pushMessage,
-    pushChat
+    pushChat,
+    updateMessageStatusDB
 } from '../store/chatSlice';
+import notificationSound from '../audio/notification.mp3'
 import SOCKET_EVENTS from "../socketEvents";
+import { escape } from 'lodash';
 
 const Messenger = () => {
     const dispatch = useDispatch();
-
+    const [notificationSPlay] = useSound(notificationSound)
     const { currentUser } = useSelector(state => state.auth);
     const { userMap, chatMap, selectedUserId } = useSelector(state => state.chat);
     const [theme, setTheme] = useState('light');
     const socket = useRef();
     const typingTimerRef = useRef(null);
     const selectedUserIdRef = useRef(null);
-
+    const userMapRef = useRef(null);
+    
     const handleSetTheme = (e) => {
         localStorage.setItem('theme', e.target.value);
         setTheme(e.target.value);
@@ -34,7 +40,8 @@ const Messenger = () => {
 
     useEffect(() => {
         selectedUserIdRef.current = selectedUserId;
-    }, [selectedUserId]);
+        userMapRef.current = userMap;
+    }, [selectedUserId, userMap]);
 
     useEffect(()=>{
         const savedTheme = localStorage.getItem('theme');
@@ -62,7 +69,7 @@ const Messenger = () => {
         socket.current = io(`http://localhost:8000`, {
             auth: {userId: currentUser._id, userName: currentUser.userName}
         });
-
+        
         // =======================================================================
         // Define handlers for specific events received from the WebSocket server
         // =======================================================================
@@ -92,14 +99,15 @@ const Messenger = () => {
         });
         // A new message has been received
         socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_SENT, (data) => {
-            console.log("Receive SERVER_MESSAGE_SENT", data)
-
+            notificationSPlay()
             const {senderId, message} = data;
             const updatedMessage = {...message, status: 'delivered'}
             if(senderId === selectedUserIdRef.current){
                 dispatch(pushMessage(updatedMessage));
             }
-
+            else{
+                toast.success(`${userMapRef.current[senderId].userName} send you a new Message`) 
+            }
             if (!chatMap?.[updatedMessage.chatId]){
                 const newChat = {
                         _id: updatedMessage.chatId,
@@ -121,7 +129,6 @@ const Messenger = () => {
         });
         // A message has been marked as read or delivered
         socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_UPDATED, (data)=>{    
-            console.log("Receive SERVER_MESSAGE_UPDATED", data)
             const {senderId, message} = data;
             dispatch(updateChatLastMessage(message));      
             if(senderId === selectedUserIdRef.current){
@@ -137,6 +144,15 @@ const Messenger = () => {
 
     return (
         <div className={theme==='light' ? 'messenger':'messenger dark'}>
+            <Toaster 
+                position={'top-right'} 
+                reverseOrder = {false} 
+                toastOptions = {{
+                    style : {
+                        fontSize: '18px'
+                    }
+                }}
+            />
             <div className="row">
                 <div className="col-3">
                     <ChatSidebar currentUser={currentUser} theme={theme} handleSetTheme={handleSetTheme}/>

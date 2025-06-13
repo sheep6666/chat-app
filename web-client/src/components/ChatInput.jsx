@@ -1,8 +1,10 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { debounce } from "lodash";
+import useSound from 'use-sound'
 import { FaGift, FaFileImage, FaPlusCircle, FaRegSmile, FaPaperPlane } from 'react-icons/fa';
 import { setDraftMessage, sendMessage, createChatAndSendMessage } from '../store/chatSlice';
 import SOCKET_EVENTS from "../socketEvents";
+import sendingSound from '../audio/sending.mp3'
 
 const emojis = [
     '😀', '😃', '😄', '😁',
@@ -15,7 +17,7 @@ const emojis = [
 
 const MesageSend = ({socket, currentUser, chat}) => {
     const dispatch = useDispatch();
-
+    const [sendingSPlay] = useSound(sendingSound)
     const { draftMessage, selectedUserId } = useSelector(state => state.chat);
 
     const sendTypingEvent = debounce(() => {
@@ -35,6 +37,7 @@ const MesageSend = ({socket, currentUser, chat}) => {
         sendTypingEvent();
     }
     const onSendTextMessage = (e) => {
+        //sendingSPlay();
         let data = {
             chatId: chat?._id,
             senderId: currentUser._id,
@@ -49,7 +52,7 @@ const MesageSend = ({socket, currentUser, chat}) => {
     }
     const onSendImageMessage = (e) => {
         if (e.target.files.length === 0) return;
-
+        //sendingSPlay();
         let formData = new FormData();
         formData.append('chatId', chat?._id);
         formData.append('senderId', currentUser._id,);

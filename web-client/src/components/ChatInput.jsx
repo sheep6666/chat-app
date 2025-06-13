@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaGift, FaFileImage, FaPlusCircle, FaRegSmile, FaPaperPlane } from 'react-icons/fa';
+import { setDraftMessage } from '../store/chatSlice';
 
 const emojis = [
     '😀', '😃', '😄', '😁',
@@ -11,18 +12,20 @@ const emojis = [
 ]
 
 const MesageSend = () => {
-    const [draftMessage, setDraftMessage] = useState('');
+    const dispatch = useDispatch();
 
-    const onInputChange = () => {
+    const { draftMessage } = useSelector(state => state.chat);
+
+    const onInputChange = (e) => {
+        dispatch(setDraftMessage(e.target.value));
+    }
+    const onAddEmoji = (e) => {
+        dispatch(setDraftMessage(draftMessage + e));
+    }
+    const onSendTextMessage = (e) => {
 
     }
-    const onAddEmoji = () => {
-
-    }
-    const onSendTextMessage = () => {
-
-    }
-    const onSendImageMessage = () => {
+    const onSendImageMessage = (e) => {
 
     }
     return (

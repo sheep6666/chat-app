@@ -17,7 +17,7 @@ const ChatHistory = ({currentUser, selectedUser, messages}) => {
       <div className="message-show">
         {
           messages.map((msg, i) => (
-            msg.senderId === selectedUser._id ?
+            msg.senderId === currentUser._id ?
               <div className="my-message">
                 <div className="image-message">
                   <div className="my-text">

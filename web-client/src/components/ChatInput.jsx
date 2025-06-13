@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { debounce } from "lodash";
 import useSound from 'use-sound'
@@ -19,7 +20,7 @@ const MesageSend = ({socket, currentUser, chat}) => {
     const dispatch = useDispatch();
     const [sendingSPlay] = useSound(sendingSound)
     const { draftMessage, selectedUserId } = useSelector(state => state.chat);
-
+    const isComposing = useRef(false); 
     const sendTypingEvent = debounce(() => {
         socket.current.emit(SOCKET_EVENTS.CLIENT_USER_TYPING, { 
             senderId: currentUser._id, 
@@ -64,6 +65,11 @@ const MesageSend = ({socket, currentUser, chat}) => {
             dispatch(createChatAndSendMessage({ members: [myInfo._id, user._id], message: data }));
         }
     }
+    const onKeyDown = (e) => {
+        if (e.key === 'Enter' && !isComposing.current) {
+            onSendTextMessage(e);
+        }
+    };
     return (
         <div className='message-send-section'>
             <input type="checkbox" id='emoji' />
@@ -92,6 +98,7 @@ const MesageSend = ({socket, currentUser, chat}) => {
             <div className="message-type">
                 <input
                     type="text"
+                    onKeyDown={onKeyDown}
                     onChange={onInputChange}
                     value={draftMessage}
                     name='message'

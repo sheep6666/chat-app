@@ -18,8 +18,19 @@ const PORT = 5001;
 const app = express();
 
 // CORS setup - allows front-end origin and credentials
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error(`${origin} Not allowed by CORS`));
+    }
+  },
   credentials: true
 }));
 

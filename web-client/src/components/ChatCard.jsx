@@ -2,24 +2,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment'
 import { FaRegCircle, FaRegCheckCircle } from 'react-icons/fa';
 import { setSelectedUserId } from '../store/chatSlice';
-import { users } from './data.js';
-const currentUser = users[0];
 
-const ChatCard = ({ chatUser }) => {
+const ChatCard = ({ userId }) => {
   const dispatch = useDispatch(); 
+  const { currentUser } = useSelector(state => state.auth);
   const { selectedUserId } = useSelector(state => state.chat);
-
-  if (chatUser._id === currentUser._id) return null;
-  const lastMessage = chatUser?.chat?.lastMessage;
+  const chatId = useSelector(state => state.chat.chatUsers?.[userId]);
+  if(chatId === undefined) return null;
+  
+  const chat = useSelector(state => state.chat.chatMap?.[chatId]);
+  const user = useSelector(state => state.chat.userMap?.[userId]);
+  const lastMessage = chat?.lastMessage;
 
   const handleClick = () => {
-    dispatch(setSelectedUserId(chatUser._id));
+    dispatch(setSelectedUserId(user._id));
   }
   
   const getLastMessagePreview = () => {
     if (!lastMessage) {
-      const time = moment(chatUser.createdAt).startOf('minute').fromNow();
-      return `${chatUser.userName} connected to you • ${time}`;
+      const time = moment(user.createdAt).startOf('minute').fromNow();
+      return `${user.userName} connected to you • ${time}`;
     }
 
     let senderName = lastMessage.senderId === currentUser._id ? "You" : currentUser.userName;
@@ -33,7 +35,7 @@ const ChatCard = ({ chatUser }) => {
 
     if(lastMessage.senderId === currentUser._id){
         if (lastMessage.status === 'seen'){
-            return <img src={`http://localhost:5001/uploads/avatars/${chatUser.avatar}`} alt="" />
+            return <img src={`http://localhost:5001/uploads/avatars/${user.avatar}`} alt="" />
         }else if(lastMessage.status === 'delivered'){
             return <div className="delivered"><FaRegCheckCircle /></div>
         }else{
@@ -50,18 +52,18 @@ const ChatCard = ({ chatUser }) => {
   }
 
   return (
-    <div className={chatUser._id===selectedUserId?'hover-friend active' : 'hover-friend'} onClick={handleClick}>
+    <div className={user._id===selectedUserId?'hover-friend active' : 'hover-friend'} onClick={handleClick}>
       <div className="friend">
         <div className="friend-image">
           <div className="image">
-            <img src={`http://localhost:5001/uploads/avatars/${chatUser.avatar}`} alt="" />
+            <img src={`http://localhost:5001/uploads/avatars/${user.avatar}`} alt="" />
             <div className="active_icon"></div>
           </div>
         </div>
 
         <div className="friend-name-seen">
           <div className="friend-name">
-            <h4 className="Fd_name">{chatUser.userName}</h4>
+            <h4 className="Fd_name">{user.userName}</h4>
             <div className="msg-time">
               <span>{getLastMessagePreview()}</span>
             </div>

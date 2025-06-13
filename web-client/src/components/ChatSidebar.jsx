@@ -1,15 +1,20 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaEdit, FaEllipsisH, FaSistrix, FaSignOutAlt } from 'react-icons/fa';
 import ChatCard from './ChatCard'
 import { userLogout } from '../store/authSlice';
 
-const ChatSidebar = ({ currentUser, chatUsers, theme, handleSetTheme }) => {
+const ChatSidebar = ({ currentUser, theme, handleSetTheme }) => {
     const dispatch = useDispatch();
 
+    const { chatUsers } = useSelector(state => state.chat);
     const [isThemeMenuVisible, setIsThemeMenuVisible] = useState(false);
+
+    const userIds = Object.keys(chatUsers);
+
     const toggleThemeMenu = () =>{ setIsThemeMenuVisible(!isThemeMenuVisible) };
     const handleLogoutClick = () =>{dispatch(userLogout())};
+
     return (
         <div className="left-side">
             <div className="top">
@@ -70,9 +75,9 @@ const ChatSidebar = ({ currentUser, chatUsers, theme, handleSetTheme }) => {
 
             <div className="friends">
                 {
-                    chatUsers?.length > 0 &&
-                    chatUsers.map((chatUser, index) => (
-                        <ChatCard chatUser={chatUser} />
+                    userIds?.length > 0 &&
+                    userIds.map((userId, index) => (
+                        <ChatCard userId={userId} />
                     ))
                 }
             </div>

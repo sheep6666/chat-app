@@ -1,10 +1,27 @@
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaVideo, FaPhoneAlt, FaRocketchat } from 'react-icons/fa';
 import ChatHistory from './ChatHistory';
 import ChatInput from './ChatInput';
 import ChatInfoPanel from './ChatInfoPanel';
+import { getChatMessages, clearMessage } from '../store/chatSlice';
 
-const ChatBody = ({currentUser, selectedUser, messages}) => {
-    
+const ChatBody = ({currentUser}) => {
+    const dispatch = useDispatch();
+  const { selectedUserId, messages } = useSelector(state => state.chat);
+  
+  const chatId = useSelector(state => state.chat.chatUsers?.[selectedUserId]);
+  const selectedUser = useSelector(state => state.chat.userMap?.[selectedUserId]);
+
+    useEffect(() => {
+        if (chatId) {
+            dispatch(getChatMessages(chatId));
+        } else{
+            dispatch(clearMessage());
+        }
+    }, [chatId])
+
+    if (!selectedUserId) return ('Please select a conversation to chat with.')
     return (
         <div className="right-side">
             <input type="checkbox" id='dot' />

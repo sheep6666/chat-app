@@ -38,6 +38,46 @@ export const getChatMessages = createAsyncThunk(
     }
   }
 );
+
+export const sendMessage = createAsyncThunk(
+  'messenger/sendMessage',
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(`http://localhost:5001/api/messenger/messages`, data, { withCredentials: true });
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
+    }
+  }
+);
+export const createChatAndSendMessage = createAsyncThunk(
+  'messenger/createChatAndSendMessage',
+  async (data, { rejectWithValue }) => {
+    try {
+      const chatRes = await axios.post(`http://localhost:5001/api/messenger/chats`, {members: data.members}, {
+        withCredentials: true
+      });
+
+      let messageWithChatId;
+      if (data.message instanceof FormData){
+        data.message.delete('chatId');
+        data.message.append('chatId', chatRes.data.data._id);
+        messageWithChatId = data.message;
+      }
+      else{
+        messageWithChatId = { ...data.message, chatId: chatRes.data.data._id }
+      }        
+
+      const messageRes = await axios.post(`http://localhost:5001/api/messenger/messages`, messageWithChatId, {
+        withCredentials: true
+      });
+      return {chat: messageRes.data.data, message: messageRes.data.data};
+    } catch (err) {
+      console.log(err)
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
 // ==============================
 // Redux Slice - Chat State Management
 // ==============================

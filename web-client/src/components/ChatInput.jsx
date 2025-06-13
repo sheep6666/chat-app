@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { FaGift, FaFileImage, FaPlusCircle, FaRegSmile, FaPaperPlane } from 'react-icons/fa';
-import { setDraftMessage } from '../store/chatSlice';
+import { setDraftMessage, sendMessage, createChatAndSendMessage } from '../store/chatSlice';
 
 const emojis = [
     '😀', '😃', '😄', '😁',
@@ -11,7 +11,7 @@ const emojis = [
     '😕', '🤑', '🥴', '😱'
 ]
 
-const MesageSend = () => {
+const MesageSend = ({currentUser, chat}) => {
     const dispatch = useDispatch();
 
     const { draftMessage } = useSelector(state => state.chat);
@@ -23,10 +23,32 @@ const MesageSend = () => {
         dispatch(setDraftMessage(draftMessage + e));
     }
     const onSendTextMessage = (e) => {
-
+        let data = {
+            chatId: chat?._id,
+            senderId: currentUser._id,
+            content: draftMessage ? draftMessage : '♥',
+            type: 'text'
+        }
+        if (chat) {
+            dispatch(sendMessage(data));
+        } else {
+            dispatch(createChatAndSendMessage({ members: [myInfo._id, user._id], message: data }));
+        }
     }
-    const onSendImageMessage = (e) => {
 
+    const onSendImageMessage = (e) => {
+        if (e.target.files.length === 0) return;
+
+        let formData = new FormData();
+        formData.append('chatId', chat?._id);
+        formData.append('senderId', currentUser._id,);
+        formData.append('type', "image");
+        formData.append('image', e.target.files[0]);
+        if (chat) {
+            dispatch(sendMessage(data));
+        } else {
+            dispatch(createChatAndSendMessage({ members: [myInfo._id, user._id], message: data }));
+        }
     }
     return (
         <div className='message-send-section'>

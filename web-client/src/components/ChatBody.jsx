@@ -11,6 +11,7 @@ const ChatBody = ({currentUser}) => {
   const { selectedUserId, messages } = useSelector(state => state.chat);
   
   const chatId = useSelector(state => state.chat.chatUsers?.[selectedUserId]);
+  const chat = useSelector(state => state.chat.chatMap?.[chatId]);
   const selectedUser = useSelector(state => state.chat.userMap?.[selectedUserId]);
 
     useEffect(() => {
@@ -57,7 +58,7 @@ const ChatBody = ({currentUser}) => {
                         <ChatHistory currentUser={currentUser} selectedUser={selectedUser} messages={messages}/>
 
                         {/* 當前聊天面板，下部訊息輸入部分 */}
-                        <ChatInput />
+                        <ChatInput currentUser={currentUser} chat={chat}/>
                     </div>
                 </div>
 

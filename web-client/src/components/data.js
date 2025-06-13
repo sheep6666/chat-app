@@ -186,12 +186,51 @@ export const chatUsers = [
 
 export const messages = [
   {
-    _id: '684aab4f9a09f439a9344c04',
-    senderId: '6846d8ba718f7212e4a8a26c',
-    chatId: '684aab4f9a09f439a9344c01',
+    _id: '684aa9b65f0d02f70209c5c0',
+    senderId: '6846d90a341a1f401038d7b8',
+    content: 'Hi user01',
     type: 'text',
+    status: 'seen',
+    createdAt: '2025-06-12T10:19:34.729Z'
+  },
+  {
+    _id: '684aa9c85f0d02f70209c5ca',
+    senderId: '6846d8ba718f7212e4a8a26c',
+    content: 'Hello, how are u?',
+    type: 'text',
+    status: 'seen',
+    createdAt: '2025-06-12T10:19:52.304Z'
+  },
+  {
+    _id: '684aa9d15f0d02f70209c5d0',
+    senderId: '6846d90a341a1f401038d7b8',
+    content: 'good',
+    type: 'text',
+    status: 'seen',
+    createdAt: '2025-06-12T10:20:01.980Z'
+  },
+  {
+    _id: '684aa9d85f0d02f70209c5d6',
+    senderId: '6846d90a341a1f401038d7b8',
+    content: '1749723608515-436853405.jpeg',
+    type: 'image',
+    status: 'seen',
+    createdAt: '2025-06-12T10:20:08.517Z'
+  },
+  {
+    _id: '684aa9e45f0d02f70209c5dc',
+    senderId: '6846d90a341a1f401038d7b8',
+    content: 'my favorite photo',
+    type: 'text',
+    status: 'seen',
+    createdAt: '2025-06-12T10:20:20.251Z'
+  },
+  {
+    _id: '684aa9eb5f0d02f70209c5e2',
+    senderId: '6846d8ba718f7212e4a8a26c',
     content: '♥',
-    status: 'sent',
-    createdAt: '2025-06-12T10:26:23.756Z'
+    type: 'text',
+    status: 'seen',
+    createdAt: '2025-06-12T10:20:27.570Z'
   }
-];
+]

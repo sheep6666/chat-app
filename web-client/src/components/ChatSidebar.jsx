@@ -1,10 +1,12 @@
-import { FaEdit, FaEllipsisH, FaSistrix } from 'react-icons/fa';
+import { useState } from 'react';
+import { FaEdit, FaEllipsisH, FaSistrix, FaSignOutAlt } from 'react-icons/fa';
 import ChatCard from './ChatCard'
-import { users, chatUsers } from './data.js';
-const currentUser = users[0];
 
-const ChatSidebar = () => {
-
+const ChatSidebar = ({ currentUser, chatUsers }) => {
+    const [isThemeMenuVisible, setIsThemeMenuVisible] = useState(false);
+    const toggleThemeMenu = () =>{ setIsThemeMenuVisible(!isThemeMenuVisible) };
+    const handleLogoutClick = (e) =>{};
+    const handleThemeChange = (e) => {};
     return (
         <div className="left-side">
             <div className="top">
@@ -17,13 +19,41 @@ const ChatSidebar = () => {
                     </div>
                 </div>
 
-                
+
                 <div className="icons">
-                    <div className="icon">
+                    <div className="icon" onClick={toggleThemeMenu}>
                         <FaEllipsisH />
                     </div>
                     <div className="icon">
                         <FaEdit />
+                    </div>
+                    <div className={isThemeMenuVisible ? 'theme_logout show' : 'theme_logout'}>
+                        <h3>Dark Mode</h3>
+                        <div className="on">
+                            <label htmlFor="dark">ON</label>
+                            <input
+                                type="radio"
+                                value="dark"
+                                name="theme"
+                                id="dark"
+                                onChange={handleThemeChange}
+                                checked={true}
+                            />
+                        </div>
+                        <div className="off">
+                            <label htmlFor="white">OFF</label>
+                            <input
+                                type="radio"
+                                value="white"
+                                name="theme"
+                                id="white"
+                                onChange={handleThemeChange}
+                                checked={false}
+                            />
+                        </div>
+                        <div className="logout" onClick={handleLogoutClick}>
+                            <FaSignOutAlt />  Logout
+                        </div>
                     </div>
                 </div>
             </div>
@@ -36,12 +66,12 @@ const ChatSidebar = () => {
             </div>
 
             <div className="friends">
-            {
-                chatUsers?.length > 0 && 
-                chatUsers.map((chatUser, index) => (
-                    <ChatCard chatUser={chatUser} />
-                ))
-            }
+                {
+                    chatUsers?.length > 0 &&
+                    chatUsers.map((chatUser, index) => (
+                        <ChatCard chatUser={chatUser} />
+                    ))
+                }
             </div>
         </div>
     )

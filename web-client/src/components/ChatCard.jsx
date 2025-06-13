@@ -1,13 +1,19 @@
+import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment'
 import { FaRegCircle, FaRegCheckCircle } from 'react-icons/fa';
+import { setSelectedUserId } from '../store/chatSlice';
 import { users } from './data.js';
 const currentUser = users[0];
 
 const ChatCard = ({ chatUser }) => {
+  const dispatch = useDispatch(); 
+  const { selectedUserId } = useSelector(state => state.chat);
+
   if (chatUser._id === currentUser._id) return null;
   const lastMessage = chatUser?.chat?.lastMessage;
 
   const handleClick = () => {
+    dispatch(setSelectedUserId(chatUser._id));
   }
   
   const getLastMessagePreview = () => {
@@ -44,7 +50,7 @@ const ChatCard = ({ chatUser }) => {
   }
 
   return (
-    <div className='hover-friend' onClick={handleClick}>
+    <div className={chatUser._id===selectedUserId?'hover-friend active' : 'hover-friend'} onClick={handleClick}>
       <div className="friend">
         <div className="friend-image">
           <div className="image">

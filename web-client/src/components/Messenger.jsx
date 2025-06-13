@@ -3,7 +3,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import {io} from 'socket.io-client';
 import ChatSidebar from './ChatSidebar'; 
 import ChatBody from './ChatBody';
-import { getUsers, getChats, setChatUsers, setIsUserTyping, setOnlineUserMap, updateOnlineUserMap } from '../store/chatSlice';
+import { 
+    getUsers, 
+    getChats, 
+    setChatUsers, 
+    setIsUserTyping, 
+    setOnlineUserMap, 
+    updateOnlineUserMap, 
+    updateCurrentMessage,
+    updateChatLastMessage,
+    pushMessage,
+    pushChat
+} from '../store/chatSlice';
 import SOCKET_EVENTS from "../socketEvents";
 
 const Messenger = () => {
@@ -82,11 +93,42 @@ const Messenger = () => {
         // A new message has been received
         socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_SENT, (data) => {
             console.log("Receive SERVER_MESSAGE_SENT", data)
+
+            const {senderId, message} = data;
+            const updatedMessage = {...message, status: 'delivered'}
+            if(senderId === selectedUserIdRef.current){
+                dispatch(pushMessage(updatedMessage));
+            }
+
+            if (!chatMap?.[updatedMessage.chatId]){
+                const newChat = {
+                        _id: updatedMessage.chatId,
+                        members: [{_id: currentUser._id}, {_id: senderId}],
+                        lastMessage: updatedMessage
+                    }
+                dispatch(pushChat({userId: senderId, chat: newChat}));
+            }
+            else{
+                updateChatLastMessage(updatedMessage)
+            }
+
+            dispatch(updateMessageStatusDB(updatedMessage)) 
+            socket.current.emit(SOCKET_EVENTS.CLIENT_MESSAGE_UPDATED, {
+                senderId: currentUser._id,
+                receiverIds: [updatedMessage.senderId],
+                message: updatedMessage
+            });
         });
         // A message has been marked as read or delivered
         socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_UPDATED, (data)=>{    
             console.log("Receive SERVER_MESSAGE_UPDATED", data)
+            const {senderId, message} = data;
+            dispatch(updateChatLastMessage(message));      
+            if(senderId === selectedUserIdRef.current){
+                dispatch(updateCurrentMessage(message));  
+            }
         })
+
         return () => {
             socket.current.disconnect(); 
         };

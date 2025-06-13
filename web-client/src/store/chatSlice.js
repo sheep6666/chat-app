@@ -38,7 +38,6 @@ export const getChatMessages = createAsyncThunk(
     }
   }
 );
-
 export const sendMessage = createAsyncThunk(
   'messenger/sendMessage',
   async (data, { rejectWithValue }) => {
@@ -75,6 +74,17 @@ export const createChatAndSendMessage = createAsyncThunk(
     } catch (err) {
       console.log(err)
       return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+export const updateMessageStatusDB = createAsyncThunk(
+  'messenger/updateMessageStatusDB', 
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await axios.patch(`http://localhost:5001/api/messenger/messages/${data._id}/status`, data, { withCredentials: true });
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
     }
   }
 );
@@ -125,6 +135,25 @@ const chatSlice = createSlice({
     },
     clearIsMessageSent: (state) => {
       state.isMessageSent = false;
+    },
+    updateCurrentMessage: (state, action) => {
+      state.messages.pop()
+      state.messages.push(action.payload); 
+    },
+    updateChatLastMessage: (state, action) => {
+      const newObj = action.payload;
+      state.chatMap[newObj.chatId] = {
+        ...state.chatMap[newObj.chatId], 
+        lastMessage: newObj
+      }
+    },
+    pushMessage: (state, action) => {
+      state.messages.push(action.payload); 
+    },
+    pushChat: (state, action) => {
+      const {userId, chat} = action.payload;
+      state.chatMap[chat._id] = chat; 
+      state.chatUsers[userId] = chat._id;
     },
   },
   extraReducers: (builder) => {
@@ -188,7 +217,11 @@ export const {
   setIsUserTyping,
   setOnlineUserMap,
   updateOnlineUserMap,
-  clearIsMessageSent
+  clearIsMessageSent,
+  updateCurrentMessage, 
+  updateChatLastMessage,
+  pushMessage,
+  pushChat
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

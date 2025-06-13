@@ -25,7 +25,7 @@ const ChatCard = ({ userId }) => {
       return `${user.userName} connected to you • ${time}`;
     }
 
-    let senderName = lastMessage.senderId === currentUser._id ? "You" : currentUser.userName;
+    let senderName = lastMessage.senderId === currentUser._id ? "You" : user.userName;
     let messageSnippet = lastMessage.type === 'text' ? lastMessage.content.slice(0, 10) : "sent an Image";
     const time = moment(lastMessage.createdAt).startOf('minute').fromNow();
     return `${senderName}: ${messageSnippet} • ${time}`

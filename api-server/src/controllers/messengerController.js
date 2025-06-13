@@ -63,7 +63,7 @@ module.exports.getChatMessages = async (req, res) => {
     const chatId = req.params.id;
     try {
         const messages = await Message.find({ chatId: chatId })
-            .select('senderId content type status createdAt')
+            .select('chatId senderId content type status createdAt')
             .sort({ createdAt: 1 })
             .lean();
         if (!messages) {

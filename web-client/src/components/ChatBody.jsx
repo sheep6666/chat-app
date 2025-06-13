@@ -6,7 +6,7 @@ import ChatInput from './ChatInput';
 import ChatInfoPanel from './ChatInfoPanel';
 import { getChatMessages, clearMessage } from '../store/chatSlice';
 
-const ChatBody = ({socket, currentUser}) => {
+const ChatBody = ({socket, scrollRef, currentUser}) => {
     const dispatch = useDispatch();
   const { selectedUserId, messages } = useSelector(state => state.chat);
   const isOnline = useSelector(state => state.chat.onlineUserMap?.[selectedUserId]);
@@ -55,7 +55,7 @@ const ChatBody = ({socket, currentUser}) => {
                         </div>
 
                         {/* 當前聊天面板，中間聊天訊息部分 */}
-                        <ChatHistory socket={socket} currentUser={currentUser} selectedUser={selectedUser} messages={messages}/>
+                        <ChatHistory socket={socket} scrollRef={scrollRef} currentUser={currentUser} selectedUser={selectedUser} messages={messages}/>
 
                         {/* 當前聊天面板，下部訊息輸入部分 */}
                         <ChatInput socket={socket} currentUser={currentUser} chat={chat}/>

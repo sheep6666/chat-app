@@ -33,7 +33,8 @@ const Messenger = () => {
     const typingTimerRef = useRef(null);
     const selectedUserIdRef = useRef(null);
     const userMapRef = useRef(null);
-    
+    const scrollRef = useRef();
+
     const handleSetTheme = (e) => {
         localStorage.setItem('theme', e.target.value);
         setTheme(e.target.value);
@@ -175,7 +176,7 @@ const Messenger = () => {
                     <ChatSidebar currentUser={currentUser} theme={theme} handleSetTheme={handleSetTheme}/>
                 </div>
                 <div className='col-9'>
-                    <ChatBody socket={socket} currentUser={currentUser}/>
+                    <ChatBody socket={socket} scrollRef={scrollRef} currentUser={currentUser}/>
                 </div>
             </div>
         </div>

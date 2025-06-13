@@ -76,8 +76,8 @@ const ChatSidebar = ({ currentUser, theme, handleSetTheme }) => {
             <div className="friends">
                 {
                     userIds?.length > 0 &&
-                    userIds.map((userId, index) => (
-                        <ChatCard userId={userId} />
+                    userIds.map((userId, i) => (
+                        <ChatCard userId={userId} key={i}/>
                     ))
                 }
             </div>

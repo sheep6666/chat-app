@@ -5,7 +5,7 @@ import { FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { clearIsMessageSent, updateMessageStatusDB, updateChatLastMessage } from '../store/chatSlice';
 import SOCKET_EVENTS from "../socketEvents";
 
-const ChatHistory = ({ socket, currentUser, selectedUser, messages }) => {
+const ChatHistory = ({ socket, scrollRef, currentUser, selectedUser, messages }) => {
   const dispatch = useDispatch();
   const { isUserTyping, isMessageSent } = useSelector(state => state.chat);
 
@@ -21,7 +21,11 @@ const ChatHistory = ({ socket, currentUser, selectedUser, messages }) => {
       dispatch(clearIsMessageSent());
     }
   }, [isMessageSent])
-
+useEffect(() => {
+      scrollRef.current?.scrollIntoView({
+          behavior: 'smooth'
+      });
+  }, [messages]);
   // Mark the last loaded message as read, if it hasn't been read yet
   useEffect(() => {
     if (!messages || messages.length === 0) return;
@@ -58,7 +62,7 @@ const ChatHistory = ({ socket, currentUser, selectedUser, messages }) => {
         {
           messages.map((msg, i) => (
             msg.senderId === currentUser._id ?
-              <div className="my-message">
+              <div className="my-message"  ref={scrollRef} key={i}>
                 <div className="image-message">
                   <div className="my-text">
                     {/* 訊息展示（文字 / 圖片） */}
@@ -94,7 +98,7 @@ const ChatHistory = ({ socket, currentUser, selectedUser, messages }) => {
                 
               </div>
               :
-              <div className="fd-message">
+              <div className="fd-message"  ref={scrollRef} key={i}>
                 <div className="image-message-time">
                   <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
                   <div className="message-time">

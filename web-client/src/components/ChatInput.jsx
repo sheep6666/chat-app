@@ -47,7 +47,6 @@ const MesageSend = ({socket, currentUser, chat}) => {
             dispatch(createChatAndSendMessage({ members: [myInfo._id, user._id], message: data }));
         }
     }
-
     const onSendImageMessage = (e) => {
         if (e.target.files.length === 0) return;
 

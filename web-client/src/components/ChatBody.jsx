@@ -55,7 +55,7 @@ const ChatBody = ({socket, currentUser}) => {
                         </div>
 
                         {/* 當前聊天面板，中間聊天訊息部分 */}
-                        <ChatHistory currentUser={currentUser} selectedUser={selectedUser} messages={messages}/>
+                        <ChatHistory socket={socket} currentUser={currentUser} selectedUser={selectedUser} messages={messages}/>
 
                         {/* 當前聊天面板，下部訊息輸入部分 */}
                         <ChatInput socket={socket} currentUser={currentUser} chat={chat}/>

@@ -71,7 +71,7 @@ export const createChatAndSendMessage = createAsyncThunk(
       const messageRes = await axios.post(`http://localhost:5001/api/messenger/messages`, messageWithChatId, {
         withCredentials: true
       });
-      return {chat: messageRes.data.data, message: messageRes.data.data};
+      return {chat: chatRes.data.data, message: messageRes.data.data};
     } catch (err) {
       console.log(err)
       return rejectWithValue(err.response?.data || err.message);
@@ -91,6 +91,7 @@ const initialState = {
   messages: [],
   draftMessage: '',
   isUserTyping: false,
+  isMessageSent: false
 };
 
 const chatSlice = createSlice({
@@ -122,6 +123,9 @@ const chatSlice = createSlice({
     updateOnlineUserMap: (state, action) => {
       state.onlineUserMap = {...state.onlineUserMap, ...action.payload}
     },
+    clearIsMessageSent: (state) => {
+      state.isMessageSent = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -145,6 +149,32 @@ const chatSlice = createSlice({
       .addCase(getChatMessages.fulfilled, (state, action) => {
         state.messages = action.payload.data;
       })
+      .addCase(sendMessage.pending, (state) => {
+        state.isMessageSent = false;
+      })
+      .addCase(sendMessage.fulfilled, (state, action) => {
+        const newMessage = action.payload.data;
+        state.messages = [...state.messages, newMessage];
+
+        const chatId = newMessage.chatId
+        const updatedChat = {...state.chatMap[chatId], lastMessage: newMessage}
+        state.chatMap = {...state.chatMap, [updatedChat._id]: updatedChat} 
+        state.draftMessage = '';
+        state.isMessageSent = true;
+      })
+      .addCase(createChatAndSendMessage.pending, (state) => {
+        state.isMessageSent = false;
+      })
+      .addCase(createChatAndSendMessage.fulfilled, (state, action) => {
+        const {chat, message} = action.payload;
+        state.messages = [...state.messages, message];
+        
+        const updatedChat = {...chat, lastMessage: message}
+        state.chatMap = {...state.chatMap, [updatedChat._id]: updatedChat} 
+        state.chatUsers = {...state.chatMap, [message.senderId]: updatedChat._id} 
+        state.draftMessage = '';
+        state.isMessageSent = true;
+      })
   }
 });
 
@@ -157,7 +187,8 @@ export const {
   clearMessage,
   setIsUserTyping,
   setOnlineUserMap,
-  updateOnlineUserMap
+  updateOnlineUserMap,
+  clearIsMessageSent
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

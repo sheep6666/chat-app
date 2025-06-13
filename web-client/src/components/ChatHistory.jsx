@@ -1,10 +1,26 @@
+import { useEffect } from 'react';
 import moment from 'moment'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
+import { clearIsMessageSent } from '../store/chatSlice';
+import SOCKET_EVENTS from "../socketEvents";
+  
+const ChatHistory = ({socket, currentUser, selectedUser, messages}) => {
+  const dispatch = useDispatch();
+  const { isUserTyping, isMessageSent } = useSelector(state => state.chat);
 
-const ChatHistory = ({currentUser, selectedUser, messages}) => {
-
-  const { isUserTyping } = useSelector(state => state.chat);
+  // 當發送的訊息被後端處理成功時，才執行的動作
+  useEffect(() => {
+      if (isMessageSent) {
+          const lastMessage = messages[messages.length - 1];
+          socket.current.emit(SOCKET_EVENTS.CLIENT_MESSAGE_SENT, {
+              senderId: currentUser._id, 
+              receiverIds: [selectedUser._id], 
+              message: lastMessage
+          });
+          dispatch(clearIsMessageSent());
+      }
+  }, [isMessageSent])
 
   if (!messages || messages.length === 0) return (
     <div className="message-show">

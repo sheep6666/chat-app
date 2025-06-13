@@ -71,21 +71,20 @@ const authSlice = createSlice({
     builder
       .addCase(userRegister.fulfilled, (state, action) => {
         const jwtToken = action.payload.data.token;
-        state.currentUser = decodeValidJWT(action.payload.token);
+        state.currentUser = decodeValidJWT(action.payload.data.token);
         state.toastQueue = [...state.toastQueue, {type: 'success', message: action.payload.message}]
-        localStorage.setItem('authToken', action.payload.token);
+        localStorage.setItem('authToken', action.payload.data.token);
       })
       .addCase(userRegister.rejected, (state, action) => {
         const errorToasts = action.payload.errors.map(o=>{return {type: 'error', message: o}})
         state.toastQueue = [...state.toastQueue, ...errorToasts]
       })
       .addCase(userLogin.fulfilled, (state, action) => {
-        state.currentUser = decodeValidJWT(action.payload.token);
+        state.currentUser = decodeValidJWT(action.payload.data.token);
         state.toastQueue = [...state.toastQueue, {type: 'success', message: action.payload.message}]
-        localStorage.setItem('authToken', action.payload.token);
+        localStorage.setItem('authToken', action.payload.data.token);
       })
       .addCase(userLogin.rejected, (state, action) => {
-        console.log(action.payload)
         const errorToasts = action.payload.errors.map(o=>{return {type: 'error', message: o}})
         state.toastQueue = [...state.toastQueue, ...errorToasts]
       })

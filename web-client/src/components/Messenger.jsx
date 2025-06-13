@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {io} from 'socket.io-client';
 import ChatSidebar from './ChatSidebar'; 
 import ChatBody from './ChatBody';
-import { getUsers, getChats, setChatUsers, setIsUserTyping } from '../store/chatSlice';
+import { getUsers, getChats, setChatUsers, setIsUserTyping, setOnlineUserMap, updateOnlineUserMap } from '../store/chatSlice';
 import SOCKET_EVENTS from "../socketEvents";
 
 const Messenger = () => {
@@ -57,15 +57,16 @@ const Messenger = () => {
         // =======================================================================
         // Receive the list of currently online users
         socket.current.on(SOCKET_EVENTS.SERVER_ACTIVE_USERS, (data)=>{
-            console.log("Receive SERVER_ACTIVE_USERS", data)
+            const onlineUserIds = data.map(o=>o.userId);
+            dispatch(setOnlineUserMap(onlineUserIds));
         });
         //  A user has come online
         socket.current.on(SOCKET_EVENTS.SERVER_USER_JOINED, (data)=>{
-            console.log("Receive SERVER_USER_JOINED", data)
+            dispatch(updateOnlineUserMap({[data.senderId]: true}));  
         })
         // A user has gone offline
         socket.current.on(SOCKET_EVENTS.SERVER_USER_LEFT, (data)=>{
-            console.log("Receive SERVER_USER_LEFT", data)
+            dispatch(updateOnlineUserMap({[data.senderId]: false}));
         })
         // The current chat target is typing a message
         socket.current.on(SOCKET_EVENTS.SERVER_USER_TYPING, (data) => { 

@@ -9,7 +9,7 @@ import { getChatMessages, clearMessage } from '../store/chatSlice';
 const ChatBody = ({socket, currentUser}) => {
     const dispatch = useDispatch();
   const { selectedUserId, messages } = useSelector(state => state.chat);
-  
+  const isOnline = useSelector(state => state.chat.onlineUserMap?.[selectedUserId]);
   const chatId = useSelector(state => state.chat.chatUsers?.[selectedUserId]);
   const chat = useSelector(state => state.chat.chatMap?.[chatId]);
   const selectedUser = useSelector(state => state.chat.userMap?.[selectedUserId]);
@@ -35,7 +35,7 @@ const ChatBody = ({socket, currentUser}) => {
                             <div className="image-name">
                                 <div className="image">
                                     <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
-                                    <div className="active-icon"></div>
+                                    {isOnline?<div className="active-icon"></div>:null}
                                 </div>
                                 <div className="name">
                                     <h3>{selectedUser.userName}</h3>
@@ -64,7 +64,7 @@ const ChatBody = ({socket, currentUser}) => {
 
                 {/* 右側好友資訊面板部分 */}
                 <div className="col-4">
-                    <ChatInfoPanel selectedUser={selectedUser} messages={messages}/>
+                    <ChatInfoPanel selectedUser={selectedUser} messages={messages} isOnline={isOnline}/>
                 </div>
             </div>
         </div>

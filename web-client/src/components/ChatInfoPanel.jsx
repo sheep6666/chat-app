@@ -1,6 +1,6 @@
 import { FaCaretSquareDown } from 'react-icons/fa';
 
-const ChatInfoPanel = ({selectedUser, messages}) => {
+const ChatInfoPanel = ({selectedUser, messages, isOnline}) => {
     return (
         <div className="friend-info">
             <input type="checkbox" id='gallery' />
@@ -10,7 +10,7 @@ const ChatInfoPanel = ({selectedUser, messages}) => {
                 <div className="image">
                     <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
                 </div>
-                    <div className="active-user">Active</div>
+                    {isOnline ? <div className="active-user">Active</div> : null}
                 <div className="name">
                     <h4>{selectedUser.userName}</h4>
                 </div>

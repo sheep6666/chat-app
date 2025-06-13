@@ -78,17 +78,19 @@ export const createChatAndSendMessage = createAsyncThunk(
     }
   }
 );
+
 // ==============================
 // Redux Slice - Chat State Management
 // ==============================
 const initialState = {
+  onlineUserMap: {},
   userMap: {},
   chatMap: {},
   chatUsers: {},
   selectedUserId: null,
   messages: [],
   draftMessage: '',
-  isUserTyping: false
+  isUserTyping: false,
 };
 
 const chatSlice = createSlice({
@@ -109,6 +111,16 @@ const chatSlice = createSlice({
     },
     setIsUserTyping: (state, action) => {
       state.isUserTyping = action.payload;
+    },
+    setOnlineUserMap: (state, action) => {
+      const userIds = action.payload;
+      state.onlineUserMap = userIds.reduce((acc, uid) => {
+          acc[uid] = true;
+          return acc;
+        }, {});
+    },
+    updateOnlineUserMap: (state, action) => {
+      state.onlineUserMap = {...state.onlineUserMap, ...action.payload}
     },
   },
   extraReducers: (builder) => {
@@ -143,7 +155,9 @@ export const {
   setDraftMessage,
   setChatUsers,
   clearMessage,
-  setIsUserTyping
+  setIsUserTyping,
+  setOnlineUserMap,
+  updateOnlineUserMap
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

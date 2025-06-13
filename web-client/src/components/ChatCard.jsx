@@ -12,6 +12,7 @@ const ChatCard = ({ userId }) => {
   
   const chat = useSelector(state => state.chat.chatMap?.[chatId]);
   const user = useSelector(state => state.chat.userMap?.[userId]);
+  const isOnline = useSelector(state => state.chat.onlineUserMap?.[userId]);
   const lastMessage = chat?.lastMessage;
 
   const handleClick = () => {
@@ -57,7 +58,7 @@ const ChatCard = ({ userId }) => {
         <div className="friend-image">
           <div className="image">
             <img src={`http://localhost:5001/uploads/avatars/${user.avatar}`} alt="" />
-            <div className="active_icon"></div>
+            {isOnline?<div className="active_icon"></div>:null}
           </div>
         </div>
 

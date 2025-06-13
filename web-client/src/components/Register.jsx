@@ -42,7 +42,6 @@ const Register = () => {
   const handleRegister = (e) => {
     e.preventDefault();
     const { userName, email, password, confirmPassword, image } = registerForm;
-    console.log("registerForm data:", registerForm);
 
     const formData = new FormData();
     formData.append('userName', userName);

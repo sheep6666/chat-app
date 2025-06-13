@@ -27,15 +27,26 @@ const getValidDecodedToken = () => {
 export const userRegister = createAsyncThunk(
   'auth/userRegister',
   async (formData, { rejectWithValue }) => {
+    console.log("userRegister")
     try {
       const reqConfig = { headers: { 'Content-Type': 'multipart/form-data' }, withCredentials: true };
       const res = await axios.post(`http://localhost:5001/api/auth/users`, formData, reqConfig);
-      return { 
-        token: res.data.token, 
-        successMessage: res.data.successMessage 
-      };
+      return res.data;
     } catch (err) {
-      return rejectWithValue(err.response.data.errors.errorMessage);
+      return rejectWithValue(err.response.data);
+    }
+  }
+);
+
+export const userLogin = createAsyncThunk(
+  'auth/userLogin',
+  async (data, { rejectWithValue }) => {
+    try {
+      const reqConfig = { headers: { 'Content-Type': 'application/json'}, withCredentials: true};
+      const res = await axios.post(`http://localhost:5001/api/auth/login`, data, reqConfig);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
     }
   }
 );
@@ -59,12 +70,23 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(userRegister.fulfilled, (state, action) => {
+        const jwtToken = action.payload.data.token;
         state.currentUser = decodeValidJWT(action.payload.token);
-        state.toastQueue = [...state.toastQueue, {type: 'success', message: action.payload.successMessage}]
+        state.toastQueue = [...state.toastQueue, {type: 'success', message: action.payload.message}]
         localStorage.setItem('authToken', action.payload.token);
       })
       .addCase(userRegister.rejected, (state, action) => {
-        const errorToasts = action.payload.map(o=>{return {type: 'error', message: o}})
+        const errorToasts = action.payload.errors.map(o=>{return {type: 'error', message: o}})
+        state.toastQueue = [...state.toastQueue, ...errorToasts]
+      })
+      .addCase(userLogin.fulfilled, (state, action) => {
+        state.currentUser = decodeValidJWT(action.payload.token);
+        state.toastQueue = [...state.toastQueue, {type: 'success', message: action.payload.message}]
+        localStorage.setItem('authToken', action.payload.token);
+      })
+      .addCase(userLogin.rejected, (state, action) => {
+        console.log(action.payload)
+        const errorToasts = action.payload.errors.map(o=>{return {type: 'error', message: o}})
         state.toastQueue = [...state.toastQueue, ...errorToasts]
       })
   }

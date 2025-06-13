@@ -1,8 +1,15 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { userLogin, clearToastQueue } from '../store/authSlice';
+import toast, { Toaster } from 'react-hot-toast';
 
 
 const Login = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const { currentUser, toastQueue } = useSelector(state => state.auth);
     const [loginForm, setLoginForm] = useState({
         email: '',
         password: ''
@@ -18,11 +25,23 @@ const Login = () => {
     const handleLogin = (e) => {
         e.preventDefault();
         const { email, password } = loginForm;
-        console.log("loginForm data:", loginForm);
+        dispatch(userLogin({ email, password }));
     }
 
+    useEffect(() => {
+        if (currentUser) { navigate('/') }
+    }, [currentUser]);
+
+    useEffect(() => {
+        if (toastQueue.length === 0) return
+        toastQueue.forEach((t) => {
+            t.type === "error" ? toast.error(t.message) : toast.success(t.message);
+        })
+        dispatch(clearToastQueue());
+    }, [toastQueue]);
     return (
         <div className='register'>
+            <Toaster />
             <div className='card'>
                 <div className='card-header'>
                     <h3>Login</h3>

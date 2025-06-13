@@ -28,6 +28,7 @@ const Messenger = () => {
     const { currentUser } = useSelector(state => state.auth);
     const { userMap, chatMap, selectedUserId } = useSelector(state => state.chat);
     const [theme, setTheme] = useState('light');
+    const [isSocketReady, setIsSocketReady] = useState(false);
     const socket = useRef();
     const typingTimerRef = useRef(null);
     const selectedUserIdRef = useRef(null);
@@ -51,19 +52,35 @@ const Messenger = () => {
     }, [])
 
     useEffect(()=>{
-        if (!userMap || !chatMap) return;
-        const userChats = {}
-        Object.values(userMap).forEach(user => {
-            if (user._id === currentUser._id) return;
-            userChats[user._id] = null
-        })
-        Object.values(chatMap).forEach(chat => {
-            const targetUser = chat.members.find(member=>member._id !== currentUser._id)
-            userChats[targetUser._id] = chat._id
-        })
-        dispatch(setChatUsers(userChats));
-    }, [userMap, chatMap])
+            if (!userMap || !chatMap) return;
+            if (selectedUserId) return;
+            const userChats = {}
+            Object.values(userMap).forEach(user => {
+                if (user._id === currentUser._id) return;
+                userChats[user._id] = null
+            })
+            Object.values(chatMap).forEach(chat => {
+                const targetUser = chat.members.find(member=>member._id !== currentUser._id)
+                userChats[targetUser._id] = chat._id
+            })
+            dispatch(setChatUsers(userChats));
+        }, [userMap, chatMap, selectedUserId])
 
+    useEffect(() => {
+        if(!isSocketReady || !chatMap) return;
+        if (selectedUserId) return;
+        Object.values(chatMap).forEach(chat => {
+            if (chat.lastMessage.status === 'sent' && chat.lastMessage.senderId !== currentUser._id){
+                const updatedMessage = {...chat.lastMessage, status:'delivered'}
+                dispatch(updateMessageStatusDB(updatedMessage)) 
+                socket.current.emit(SOCKET_EVENTS.CLIENT_MESSAGE_UPDATED, {
+                    senderId: currentUser._id,
+                    receiverIds: [updatedMessage.senderId],
+                    message: updatedMessage
+                });
+            }
+        })
+    }, [chatMap, isSocketReady, selectedUserId])
 
     useEffect(() => {
         socket.current = io(`http://localhost:8000`, {
@@ -128,14 +145,14 @@ const Messenger = () => {
             });
         });
         // A message has been marked as read or delivered
-        socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_UPDATED, (data)=>{    
+        socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_UPDATED, (data)=>{   
             const {senderId, message} = data;
             dispatch(updateChatLastMessage(message));      
             if(senderId === selectedUserIdRef.current){
                 dispatch(updateCurrentMessage(message));  
             }
         })
-
+        setIsSocketReady(true);
         return () => {
             socket.current.disconnect(); 
         };

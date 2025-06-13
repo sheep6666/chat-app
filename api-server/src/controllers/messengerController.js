@@ -43,7 +43,7 @@ module.exports.getChats = async (req, res) => {
 
         const chats = await Chat.find({ _id: { $in: user.chats } })
             .populate('members', '_id userName avatar')
-            .populate('lastMessage', 'senderId content type status')
+            .populate('lastMessage', 'chatId senderId content type status')
             .lean();
         logger.info(`Chats retrieved for user: ${userId} (${chats.length} chats)`);
         res.status(200).json({

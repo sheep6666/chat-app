@@ -55,7 +55,11 @@ module.exports.registerUser = async (req, res) => {
         const validationErrors = validateRegistrationFields(req.body, req.file || {});
         if (validationErrors.length > 0) {
             logger.warn(`Registration failed: Validation errors - ${validationErrors.join(' | ')}`);
-            return res.status(400).json({ errors: { errorMessage: validationErrors } });
+            return res.status(400).json({ 
+                success: false,
+                message: "Validation failed",
+                errors: validationErrors
+            });
         }
         
         const { userName, email, password } = req.body;
@@ -66,7 +70,9 @@ module.exports.registerUser = async (req, res) => {
         if (existingUser) {
             logger.warn(`Registration failed: Email already in use (${email})`);
             return res.status(400).json({
-                errors: { errorMessage: ["User already exists"] }
+                success: false,
+                message: "User already exists",
+                errors: ["Email is already in use"]
             });
         }
 
@@ -90,13 +96,16 @@ module.exports.registerUser = async (req, res) => {
 
         logger.info(`User registered: ${newUser.email} (ID: ${newUser._id})`);
         return res.status(200).cookie('authToken', token, cookieOptions).json({
-            successMessage: "User created successfully",
-            token
+            success: true,
+            message: "User created successfully",
+            data: { token }
         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({
-            errors: { errorMessage: ["Server error during registration"] }
+            success: false,
+            message: "Server error during registration",
+            errors: [error.message]
         });
     }
 };
@@ -108,7 +117,9 @@ module.exports.loginUser = async (req, res) => {
     if (validationErrors.length > 0) {
         logger.warn(`Login failed: Validation errors - ${validationErrors.join(' | ')}`);
         return res.status(400).json({
-            errors: { errorMessage: validationErrors }
+            success: false,
+            message: "Validation failed",
+            errors: validationErrors
         });
     }
 
@@ -117,7 +128,9 @@ module.exports.loginUser = async (req, res) => {
         if (!user) {
             logger.warn(`Login failed: Email not found (${email})`);
             return res.status(400).json({
-                errors: { errorMessage: ["Email not found"] }
+                success: false,
+                message: "Login failed",
+                errors: ["Email not found"]
             });
         }
 
@@ -126,7 +139,9 @@ module.exports.loginUser = async (req, res) => {
         if (!isPasswordValid) {
             logger.warn(`Login failed: Invalid password for email (${email})`);
             return res.status(400).json({
-                errors: { errorMessage: ["Invalid password"] }
+                success: false,
+                message: "Login failed",
+                errors: ["Invalid password"]
             });
         }
 
@@ -140,13 +155,16 @@ module.exports.loginUser = async (req, res) => {
         };
         logger.info(`User logged in: ${email} (ID: ${user._id})`);
         return res.status(200).cookie('authToken', token, cookieOptions).json({
-            successMessage: "Login successful",
-            token
+            success: true,
+            message: "Login successful",
+            data: { token }
         });
     } catch (error) {
-        console.error("Login error:", error);
+        logger.error("Login error:", error);
         return res.status(500).json({
-            errors: { errorMessage: ["Internal server error"] }
+            success: false,
+            message: "Internal server error",
+            errors: [error.message || "Unexpected server error"]
         });
     }
 };
@@ -170,6 +188,7 @@ module.exports.logoutUser = (req, res) => {
         .status(200)
         .cookie('authToken', '', expiredCookieOptions)
         .json({
-            successMessage: 'Logout successful'
+            success: true,
+            message: "Logout successful",
         });
 };

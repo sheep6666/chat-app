@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import {io} from 'socket.io-client';
 import ChatSidebar from './ChatSidebar'; 
 import ChatBody from './ChatBody';
 import { getUsers, getChats, setChatUsers } from '../store/chatSlice';
+import SOCKET_EVENTS from "../socketEvents";
 
 const Messenger = () => {
     const dispatch = useDispatch();
 
     const { currentUser } = useSelector(state => state.auth);
     const { userMap, chatMap } = useSelector(state => state.chat);
-
     const [theme, setTheme] = useState('light');
+    const socket = useRef();
 
     const handleSetTheme = (e) => {
         localStorage.setItem('theme', e.target.value);
@@ -37,6 +39,45 @@ const Messenger = () => {
         })
         dispatch(setChatUsers(userChats));
     }, [userMap, chatMap])
+
+
+    useEffect(() => {
+        socket.current = io(`http://localhost:8000`, {
+            auth: {userId: currentUser._id, userName: currentUser.userName}
+        });
+
+        // =======================================================================
+        // Define handlers for specific events received from the WebSocket server
+        // =======================================================================
+        // Receive the list of currently online users
+        socket.current.on(SOCKET_EVENTS.SERVER_ACTIVE_USERS, (data)=>{
+            console.log("Receive SERVER_ACTIVE_USERS", data)
+        });
+        //  A user has come online
+        socket.current.on(SOCKET_EVENTS.SERVER_USER_JOINED, (data)=>{
+            console.log("Receive SERVER_USER_JOINED", data)
+        })
+        // A user has gone offline
+        socket.current.on(SOCKET_EVENTS.SERVER_USER_LEFT, (data)=>{
+            console.log("Receive SERVER_USER_LEFT", data)
+        })
+        // The current chat target is typing a message
+        socket.current.on(SOCKET_EVENTS.SERVER_USER_TYPING, (data) => { 
+            console.log("Receive SERVER_USER_TYPING", data)
+        });
+        // A new message has been received
+        socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_SENT, (data) => {
+            console.log("Receive SERVER_MESSAGE_SENT", data)
+        });
+        // A message has been marked as read or delivered
+        socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_UPDATED, (data)=>{    
+            console.log("Receive SERVER_MESSAGE_UPDATED", data)
+        })
+        return () => {
+            socket.current.disconnect(); 
+        };
+    }
+    , []);
 
     return (
         <div className={theme==='light' ? 'messenger':'messenger dark'}>

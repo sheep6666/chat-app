@@ -88,6 +88,7 @@ const initialState = {
   selectedUserId: null,
   messages: [],
   draftMessage: '',
+  isUserTyping: false
 };
 
 const chatSlice = createSlice({
@@ -105,6 +106,9 @@ const chatSlice = createSlice({
     },
     clearMessage: (state) => {
       state.messages = [];
+    },
+    setIsUserTyping: (state, action) => {
+      state.isUserTyping = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -138,7 +142,8 @@ export const {
   setSelectedUserId,
   setDraftMessage,
   setChatUsers,
-  clearMessage
+  clearMessage,
+  setIsUserTyping
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

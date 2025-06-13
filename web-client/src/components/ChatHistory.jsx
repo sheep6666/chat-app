@@ -1,7 +1,10 @@
 import moment from 'moment'
+import { useSelector } from 'react-redux';
 import { FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 
 const ChatHistory = ({currentUser, selectedUser, messages}) => {
+
+  const { isUserTyping } = useSelector(state => state.chat);
 
   if (!messages || messages.length === 0) return (
     <div className="message-show">
@@ -73,18 +76,21 @@ const ChatHistory = ({currentUser, selectedUser, messages}) => {
       </div>
 
       {/* 聊天狀態展示條（對象輸入中狀態） */}
-      <div className="typing-message">
-        <div className="fd-message">
-          <div className="image-message-time">
-            <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
-            <div className="message-time">
-              <div className="fd-text">
-                <p className="time">Typing Message...</p>
+      { isUserTyping ? 
+        <div className="typing-message">
+          <div className="fd-message">
+            <div className="image-message-time">
+              <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
+              <div className="message-time">
+                <div className="fd-text">
+                  <p className="time">Typing Message...</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+        : null
+      }
     </>
   )
 }

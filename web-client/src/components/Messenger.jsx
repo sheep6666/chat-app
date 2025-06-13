@@ -3,21 +3,27 @@ import { useDispatch, useSelector } from 'react-redux';
 import {io} from 'socket.io-client';
 import ChatSidebar from './ChatSidebar'; 
 import ChatBody from './ChatBody';
-import { getUsers, getChats, setChatUsers } from '../store/chatSlice';
+import { getUsers, getChats, setChatUsers, setIsUserTyping } from '../store/chatSlice';
 import SOCKET_EVENTS from "../socketEvents";
 
 const Messenger = () => {
     const dispatch = useDispatch();
 
     const { currentUser } = useSelector(state => state.auth);
-    const { userMap, chatMap } = useSelector(state => state.chat);
+    const { userMap, chatMap, selectedUserId } = useSelector(state => state.chat);
     const [theme, setTheme] = useState('light');
     const socket = useRef();
+    const typingTimerRef = useRef(null);
+    const selectedUserIdRef = useRef(null);
 
     const handleSetTheme = (e) => {
         localStorage.setItem('theme', e.target.value);
         setTheme(e.target.value);
     };
+
+    useEffect(() => {
+        selectedUserIdRef.current = selectedUserId;
+    }, [selectedUserId]);
 
     useEffect(()=>{
         const savedTheme = localStorage.getItem('theme');
@@ -63,7 +69,14 @@ const Messenger = () => {
         })
         // The current chat target is typing a message
         socket.current.on(SOCKET_EVENTS.SERVER_USER_TYPING, (data) => { 
-            console.log("Receive SERVER_USER_TYPING", data)
+            const {senderId, chatId} = data;
+            if (senderId !== selectedUserIdRef.current) return;
+            dispatch(setIsUserTyping(true));
+
+            if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+            typingTimerRef.current = setTimeout(() => {
+                dispatch(setIsUserTyping(false));
+            }, 2000);
         });
         // A new message has been received
         socket.current.on(SOCKET_EVENTS.SERVER_MESSAGE_SENT, (data) => {
@@ -86,7 +99,7 @@ const Messenger = () => {
                     <ChatSidebar currentUser={currentUser} theme={theme} handleSetTheme={handleSetTheme}/>
                 </div>
                 <div className='col-9'>
-                    <ChatBody currentUser={currentUser}/>
+                    <ChatBody socket={socket} currentUser={currentUser}/>
                 </div>
             </div>
         </div>

@@ -1,6 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { debounce } from "lodash";
 import { FaGift, FaFileImage, FaPlusCircle, FaRegSmile, FaPaperPlane } from 'react-icons/fa';
 import { setDraftMessage, sendMessage, createChatAndSendMessage } from '../store/chatSlice';
+import SOCKET_EVENTS from "../socketEvents";
 
 const emojis = [
     '😀', '😃', '😄', '😁',
@@ -11,16 +13,26 @@ const emojis = [
     '😕', '🤑', '🥴', '😱'
 ]
 
-const MesageSend = ({currentUser, chat}) => {
+const MesageSend = ({socket, currentUser, chat}) => {
     const dispatch = useDispatch();
 
-    const { draftMessage } = useSelector(state => state.chat);
+    const { draftMessage, selectedUserId } = useSelector(state => state.chat);
 
+    const sendTypingEvent = debounce(() => {
+        socket.current.emit(SOCKET_EVENTS.CLIENT_USER_TYPING, { 
+            senderId: currentUser._id, 
+            receiverIds: [selectedUserId], 
+            chatId: chat?._id
+        });
+    }, 1000
+    );
     const onInputChange = (e) => {
         dispatch(setDraftMessage(e.target.value));
+        sendTypingEvent();
     }
     const onAddEmoji = (e) => {
         dispatch(setDraftMessage(draftMessage + e));
+        sendTypingEvent();
     }
     const onSendTextMessage = (e) => {
         let data = {

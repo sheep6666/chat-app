@@ -34,7 +34,9 @@ const Login = () => {
 
     useEffect(() => {
         if (toastQueue.length === 0) return
+        console.log(toastQueue)
         toastQueue.forEach((t) => {
+            
             t.type === "error" ? toast.error(t.message) : toast.success(t.message);
         })
         dispatch(clearToastQueue());

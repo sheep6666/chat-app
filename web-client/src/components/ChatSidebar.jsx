@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { FaEdit, FaEllipsisH, FaSistrix, FaSignOutAlt } from 'react-icons/fa';
 import ChatCard from './ChatCard'
+import { userLogout } from '../store/authSlice';
 
 const ChatSidebar = ({ currentUser, chatUsers }) => {
+    const dispatch = useDispatch();
+
     const [isThemeMenuVisible, setIsThemeMenuVisible] = useState(false);
     const toggleThemeMenu = () =>{ setIsThemeMenuVisible(!isThemeMenuVisible) };
-    const handleLogoutClick = (e) =>{};
+    const handleLogoutClick = () =>{dispatch(userLogout())};
     const handleThemeChange = (e) => {};
     return (
         <div className="left-side">

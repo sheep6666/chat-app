@@ -51,6 +51,17 @@ export const userLogin = createAsyncThunk(
   }
 );
 
+export const userLogout = createAsyncThunk(
+  'auth/userLogout', 
+  async () => {
+    try {
+      const res = await axios.post(`http://localhost:5001/api/auth/logout`, null, {withCredentials: true});
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
+    }
+});
+
 // ==============================
 // Redux Slice - Auth State Management
 // ==============================
@@ -88,6 +99,11 @@ const authSlice = createSlice({
         const errorToasts = action.payload.errors.map(o=>{return {type: 'error', message: o}})
         state.toastQueue = [...state.toastQueue, ...errorToasts]
       })
+      .addCase(userLogout.fulfilled, (state, action) => {
+        state.currentUser = null;
+        state.toastQueue = [...state.toastQueue, {type: 'success', message: action.payload.message}]
+        localStorage.removeItem('authToken');
+      });
   }
 });
 

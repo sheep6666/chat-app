@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "scripts": {
     "ws-server": "npm --prefix ws-server run ws-server",
-    "api-server": "npm --prefix api-server run api-server"
+    "api-server": "npm --prefix api-server run api-server",
+    "web-client": "npm --prefix web-client run web-client",
+    "dev": "concurrently \"npm run ws-server\" \"npm run api-server\" \"npm run web-client\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }

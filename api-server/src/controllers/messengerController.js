@@ -265,7 +265,6 @@ async function updateMessageStatus(req, res){
             data: resData
         });
     } catch (error) {
-        console.log(error.message)
         logger.error(`Error updating message status: ${error.message}`, {
             userId,
             msgId,

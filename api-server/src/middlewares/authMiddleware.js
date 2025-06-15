@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
 
-const verifyJwtToken = (token) => {
+function verifyJwtToken(token){
   return new Promise((resolve, reject) => {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) return reject(err);
@@ -10,7 +10,7 @@ const verifyJwtToken = (token) => {
   });
 };
 
-const extractUserFromToken = async (req) => {
+async function extractUserFromToken(req){
   const token = req.cookies?.authToken;
 
   if (!token) {
@@ -21,7 +21,7 @@ const extractUserFromToken = async (req) => {
   return decoded;
 };
 
-const authenticateUser = async (req, res, next) => {
+async function authenticateUser(req, res, next){
   try {
     const decoded = await extractUserFromToken(req);
     req.userId = decoded._id;
@@ -34,7 +34,7 @@ const authenticateUser = async (req, res, next) => {
   }
 };
 
-const authenticateUserOptional = async (req, res, next) => {
+async function authenticateUserOptional(req, res, next){
   try {
     const decoded = await extractUserFromToken(req);
     req.userId = decoded._id;
@@ -46,6 +46,8 @@ const authenticateUserOptional = async (req, res, next) => {
 };
 
 module.exports = {
+  verifyJwtToken,
+  extractUserFromToken,
   authenticateUser,
   authenticateUserOptional
 };

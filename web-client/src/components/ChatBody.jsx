@@ -5,6 +5,7 @@ import ChatHistory from './ChatHistory';
 import ChatInput from './ChatInput';
 import ChatInfoPanel from './ChatInfoPanel';
 import { getChatMessages, clearMessage } from '../store/chatSlice';
+import env from '@/config';
 
 const ChatBody = ({socket, scrollRef, currentUser}) => {
     const dispatch = useDispatch();
@@ -34,7 +35,7 @@ const ChatBody = ({socket, scrollRef, currentUser}) => {
                         <div className="header">
                             <div className="image-name">
                                 <div className="image">
-                                    <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
+                                    <img src={`${env.STATIC_URL}/avatars/${selectedUser.avatar}`} alt="" />
                                     {isOnline?<div className="active-icon"></div>:null}
                                 </div>
                                 <div className="name">

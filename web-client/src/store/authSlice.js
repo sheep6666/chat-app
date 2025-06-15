@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
+import env from '@/config';
 
 // ==============================
 // Utils
@@ -30,7 +31,7 @@ export const userRegister = createAsyncThunk(
     console.log("userRegister")
     try {
       const reqConfig = { headers: { 'Content-Type': 'multipart/form-data' }, withCredentials: true };
-      const res = await axios.post(`http://localhost:5001/api/auth/users`, formData, reqConfig);
+      const res = await axios.post(`${env.API_BASE_URL}/auth/users`, formData, reqConfig);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);
@@ -43,7 +44,7 @@ export const userLogin = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const reqConfig = { headers: { 'Content-Type': 'application/json'}, withCredentials: true};
-      const res = await axios.post(`http://localhost:5001/api/auth/login`, data, reqConfig);
+      const res = await axios.post(`${env.API_BASE_URL}/auth/login`, data, reqConfig);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);
@@ -55,7 +56,7 @@ export const userLogout = createAsyncThunk(
   'auth/userLogout', 
   async () => {
     try {
-      const res = await axios.post(`http://localhost:5001/api/auth/logout`, null, {withCredentials: true});
+      const res = await axios.post(`${env.API_BASE_URL}/auth/logout`, null, {withCredentials: true});
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);

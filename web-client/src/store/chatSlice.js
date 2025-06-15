@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { userLogout } from './authSlice';
+import env from '@/config';
 
 // ==============================
 // Thunks - Async Actions
@@ -9,7 +10,7 @@ export const getUsers = createAsyncThunk(
   'chat/getUsers',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`http://localhost:5001/api/messenger/users`, { withCredentials: true });
+      const res = await axios.get(`${env.API_BASE_URL}/messenger/users`, { withCredentials: true });
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);
@@ -20,7 +21,7 @@ export const getChats = createAsyncThunk(
   'chat/getChats',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`http://localhost:5001/api/messenger/chats`, { withCredentials: true });
+      const res = await axios.get(`${env.API_BASE_URL}/messenger/chats`, { withCredentials: true });
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);
@@ -31,7 +32,7 @@ export const getChatMessages = createAsyncThunk(
   'chat/getChatMessages',
   async (_id, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`http://localhost:5001/api/messenger/chats/${_id}/messages`, { withCredentials: true });
+      const res = await axios.get(`${env.API_BASE_URL}/messenger/chats/${_id}/messages`, { withCredentials: true });
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);
@@ -42,7 +43,7 @@ export const sendMessage = createAsyncThunk(
   'messenger/sendMessage',
   async (data, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`http://localhost:5001/api/messenger/messages`, data, { withCredentials: true });
+      const res = await axios.post(`${env.API_BASE_URL}/messenger/messages`, data, { withCredentials: true });
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);
@@ -53,7 +54,7 @@ export const createChatAndSendMessage = createAsyncThunk(
   'messenger/createChatAndSendMessage',
   async (data, { rejectWithValue }) => {
     try {
-      const chatRes = await axios.post(`http://localhost:5001/api/messenger/chats`, {members: data.members}, {
+      const chatRes = await axios.post(`${env.API_BASE_URL}/messenger/chats`, {members: data.members}, {
         withCredentials: true
       });
 
@@ -67,7 +68,7 @@ export const createChatAndSendMessage = createAsyncThunk(
         messageWithChatId = { ...data.message, chatId: chatRes.data.data._id }
       }        
 
-      const messageRes = await axios.post(`http://localhost:5001/api/messenger/messages`, messageWithChatId, {
+      const messageRes = await axios.post(`${env.API_BASE_URL}/messenger/messages`, messageWithChatId, {
         withCredentials: true
       });
       return {chat: chatRes.data.data, message: messageRes.data.data};
@@ -81,7 +82,7 @@ export const updateMessageStatusDB = createAsyncThunk(
   'messenger/updateMessageStatusDB', 
   async (data, { rejectWithValue }) => {
     try {
-      const res = await axios.patch(`http://localhost:5001/api/messenger/messages/${data._id}/status`, data, { withCredentials: true });
+      const res = await axios.patch(`${env.API_BASE_URL}/messenger/messages/${data._id}/status`, data, { withCredentials: true });
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);

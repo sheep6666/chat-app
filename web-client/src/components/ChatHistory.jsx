@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import { clearIsMessageSent, updateMessageStatusDB, updateChatLastMessage } from '../store/chatSlice';
 import SOCKET_EVENTS from "../socketEvents";
+import env from '@/config';
 
 const ChatHistory = ({ socket, scrollRef, currentUser, selectedUser, messages }) => {
   const dispatch = useDispatch();
@@ -50,7 +51,7 @@ useEffect(() => {
   if (!messages || messages.length === 0) return (
     <div className="message-show">
       <div className="friend_connect">
-        <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
+        <img src={`${env.STATIC_URL}/avatars/${selectedUser.avatar}`} alt="" />
         <h3>{selectedUser.userName} Connect you</h3>
         <span>{moment(selectedUser.createdAt).startOf('mini').fromNow()}</span>
       </div>
@@ -70,7 +71,7 @@ useEffect(() => {
                       {
                         msg.type === 'text'
                           ? msg.content
-                          : <img src={`http://localhost:5001/uploads/images/${msg.content}`} alt="" />
+                          : <img src={`${env.STATIC_URL}/images/${msg.content}`} alt="" />
                       }
                     </p>
                     <div className="time-status">
@@ -82,7 +83,7 @@ useEffect(() => {
                       i === messages.length - 1 ?
                         (
                           msg.status === 'seen'
-                            ? <img className='img' src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
+                            ? <img className='img' src={`${env.STATIC_URL}/avatars/${selectedUser.avatar}`} alt="" />
                             :
                             (
                               msg.status === 'delivered' ?
@@ -100,14 +101,14 @@ useEffect(() => {
               :
               <div className="fd-message"  ref={scrollRef} key={i}>
                 <div className="image-message-time">
-                  <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
+                  <img src={`${env.STATIC_URL}/avatars/${selectedUser.avatar}`} alt="" />
                   <div className="message-time">
                     <div className="fd-text">
                       <p className="message-text">
                         {
                           msg.type === 'text'
                             ? msg.content
-                            : <img src={`http://localhost:5001/uploads/images/${msg.content}`} alt="message" />
+                            : <img src={`${env.STATIC_URL}/images/${msg.content}`} alt="message" />
                         }
                       </p>
                     </div>
@@ -124,7 +125,7 @@ useEffect(() => {
         <div className="typing-message">
           <div className="fd-message">
             <div className="image-message-time">
-              <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
+              <img src={`${env.STATIC_URL}/avatars/${selectedUser.avatar}`} alt="" />
               <div className="message-time">
                 <div className="fd-text">
                   <p className="time">Typing Message...</p>

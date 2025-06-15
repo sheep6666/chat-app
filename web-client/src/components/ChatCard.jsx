@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment'
 import { FaRegCircle, FaRegCheckCircle } from 'react-icons/fa';
 import { setSelectedUserId } from '../store/chatSlice';
+import env from '@/config';
 
 const ChatCard = ({ userId }) => {
   const dispatch = useDispatch(); 
@@ -36,7 +37,7 @@ const ChatCard = ({ userId }) => {
 
     if(lastMessage.senderId === currentUser._id){
         if (lastMessage.status === 'seen'){
-            return <img src={`http://localhost:5001/uploads/avatars/${user.avatar}`} alt="" />
+            return <img src={`${env.STATIC_URL}/avatars/${user.avatar}`} alt="" />
         }else if(lastMessage.status === 'delivered'){
             return <div className="delivered"><FaRegCheckCircle /></div>
         }else{
@@ -57,7 +58,7 @@ const ChatCard = ({ userId }) => {
       <div className="friend">
         <div className="friend-image">
           <div className="image">
-            <img src={`http://localhost:5001/uploads/avatars/${user.avatar}`} alt="" />
+            <img src={`${env.STATIC_URL}/avatars/${user.avatar}`} alt="" />
             {isOnline?<div className="active_icon"></div>:null}
           </div>
         </div>

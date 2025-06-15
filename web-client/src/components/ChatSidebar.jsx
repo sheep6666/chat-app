@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FaEdit, FaEllipsisH, FaSistrix, FaSignOutAlt } from 'react-icons/fa';
 import ChatCard from './ChatCard'
 import { userLogout } from '../store/authSlice';
+import env from '@/config';
 
 const ChatSidebar = ({ currentUser, theme, handleSetTheme }) => {
     const dispatch = useDispatch();
@@ -20,7 +21,7 @@ const ChatSidebar = ({ currentUser, theme, handleSetTheme }) => {
             <div className="top">
                 <div className="image-name">
                     <div className="image">
-                        <img src={`http://localhost:5001/uploads/avatars/${currentUser.avatar}`} alt=''></img>
+                        <img src={`${env.STATIC_URL}/avatars/${currentUser.avatar}`} alt=''></img>
                     </div>
                     <div className="name">
                         <h3>{currentUser.userName}</h3>

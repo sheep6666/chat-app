@@ -1,4 +1,5 @@
 import { FaCaretSquareDown } from 'react-icons/fa';
+import env from '@/config';
 
 const ChatInfoPanel = ({selectedUser, messages, isOnline}) => {
     return (
@@ -8,7 +9,7 @@ const ChatInfoPanel = ({selectedUser, messages, isOnline}) => {
             {/* 展示用戶資訊 */}
             <div className="image-name">
                 <div className="image">
-                    <img src={`http://localhost:5001/uploads/avatars/${selectedUser.avatar}`} alt="" />
+                    <img src={`${env.STATIC_URL}/avatars/${selectedUser.avatar}`} alt="" />
                 </div>
                     {isOnline ? <div className="active-user">Active</div> : null}
                 <div className="name">
@@ -39,7 +40,7 @@ const ChatInfoPanel = ({selectedUser, messages, isOnline}) => {
                     messages.map((msg, index) => {
                         return (
                             msg.type === 'image' 
-                            ? <img src={`http://localhost:5001/uploads/images/${msg.content}`} key={index} alt="" /> 
+                            ? <img src={`${env.STATIC_URL}/images/${msg.content}`} key={index} alt="" /> 
                                 : null
                             )
                         })

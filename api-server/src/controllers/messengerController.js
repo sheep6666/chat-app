@@ -3,7 +3,7 @@ const Message = require('../models/Message');
 const Chat = require('../models/Chat');
 const logger = require('../config/logger');
 
-module.exports.getUsers = async (req, res) => {
+async function getUsers(req, res){
     const userId = req.userId;
     const excludeSelf = req.query.excludeSelf === 'true';
     try {
@@ -35,7 +35,7 @@ module.exports.getUsers = async (req, res) => {
     }
 };
 
-module.exports.getChats = async (req, res) => {
+async function getChats(req, res){
     const userId = req.userId;
     try {
         const user = await User.findById(userId).select('chats').lean();
@@ -69,7 +69,7 @@ module.exports.getChats = async (req, res) => {
     }
 };
 
-module.exports.getChatMessages = async (req, res) => {
+async function getChatMessages(req, res){
     const chatId = req.params.id;
     try {
         const messages = await Message.find({ chatId: chatId })
@@ -98,7 +98,7 @@ module.exports.getChatMessages = async (req, res) => {
     }
 };
 
-module.exports.createChat = async (req, res) => {
+async function createChat(req, res){
     let { members } = req.body;
     if (!Array.isArray(members) || members.length < 2) {
         logger.warn(`createChat failed: Invalid members input - ${JSON.stringify(members)}`);
@@ -151,7 +151,7 @@ module.exports.createChat = async (req, res) => {
     }
 };
 
-module.exports.createMessage = async (req, res) => {
+async function createMessage(req, res){
     const { chatId, senderId, type, content } = req.body;
     if (req.userId != senderId) {
         logger.warn(`Sender mismatch: req.userId=${req.userId} != senderId=${senderId}`);
@@ -208,9 +208,10 @@ module.exports.createMessage = async (req, res) => {
     }
 };
 
-module.exports.updateMessageStatus = async (req, res) => {
+async function updateMessageStatus(req, res){
     const { status } = req.body;
     const msgId = req.params.id;
+    const userId = req.userId;
     try {
         const message = await Message.findById(msgId).lean();
         if (!message) {
@@ -264,6 +265,7 @@ module.exports.updateMessageStatus = async (req, res) => {
             data: resData
         });
     } catch (error) {
+        console.log(error.message)
         logger.error(`Error updating message status: ${error.message}`, {
             userId,
             msgId,
@@ -275,4 +277,13 @@ module.exports.updateMessageStatus = async (req, res) => {
             errors: [error.message]
         });
     }
+};
+
+module.exports = {
+    getUsers,
+    getChats,
+    getChatMessages,
+    createChat,
+    createMessage,
+    updateMessageStatus
 };

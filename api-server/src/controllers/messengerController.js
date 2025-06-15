@@ -21,13 +21,16 @@ module.exports.getUsers = async (req, res) => {
         logger.info(`Users retrieved by ${userId} (excludeSelf=${excludeSelf})`);
         res.status(200).json({
             success: true,
+            message: "Users retrieved successfully",
             data: users
         });
     }
     catch (error) {
         logger.error(`Error retrieving users: ${error.message}`, { userId, stack: error.stack });
         res.status(500).json({
-            error: { errorMessage: 'Server Error' }
+            success: false,
+            message: "Server Error",
+            errors: [error.message]
         });
     }
 };
@@ -38,7 +41,11 @@ module.exports.getChats = async (req, res) => {
         const user = await User.findById(userId).select('chats').lean();
         if (!user) {
             logger.warn(`getChats failed: User not found (ID: ${userId})`);
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found',
+                errors: [`No user found with ID ${userId}`]
+            });
         }
 
         const chats = await Chat.find({ _id: { $in: user.chats } })
@@ -48,13 +55,16 @@ module.exports.getChats = async (req, res) => {
         logger.info(`Chats retrieved for user: ${userId} (${chats.length} chats)`);
         res.status(200).json({
             success: true,
+            message: "Chats retrieved successfully",
             data: chats
         });
     }
     catch (error) {
         logger.error(`Error in getChats for user ${userId}: ${error.message}`, { stack: error.stack });
         res.status(500).json({
-            error: { errorMessage: 'Server Error' }
+            success: false,
+            message: "Server Error",
+            errors: [error.message]
         });
     }
 };
@@ -69,17 +79,21 @@ module.exports.getChatMessages = async (req, res) => {
         if (!messages) {
             return res.status(404).json({
                 success: false,
-                error: { message: 'Chat not found' }
+                message: 'No messages found for this chat',
+                errors: [`No messages found for chat ID ${chatId}`]
             });
         }
         res.status(200).json({
             success: true,
-            data: messages
+            message: 'Messages retrieved successfully',
+            data: messages,
         });
     }
     catch (error) {
         return res.status(500).json({
-            error: { errorMessage: 'Server Error' }
+            success: false,
+            message: "Server Error",
+            errors: [error.message]
         });
     }
 };
@@ -90,14 +104,17 @@ module.exports.createChat = async (req, res) => {
         logger.warn(`createChat failed: Invalid members input - ${JSON.stringify(members)}`);
         return res.status(400).json({
             success: false,
-            error: { message: 'Chat must include at least two members.' }
+            message: 'Invalid input: chat must include at least two members.',
+            errors: ['Expected an array with at least two user IDs']
         });
     }
     
     if (!members.includes(req.userId)) {
         logger.warn(`Unauthorized chat access: user ${req.userId} is not a member of this chat`);
         return res.status(403).json({
-            errors: { errorMessage: 'You are not a member of this chat.' }
+            success: false,
+            message: 'Forbidden: you are not a member of this chat.',
+            errors: [`User ${req.userId} is not in [${members.join(', ')}]`]
         });
     }
     try {
@@ -120,13 +137,16 @@ module.exports.createChat = async (req, res) => {
         };
         res.status(200).json({
             success: true,
-            data: resData
+            message: 'Chat created successfully',
+            data: resData,
         });
     }
     catch (error) {
         logger.error(`createChat error: ${error.message}`, { stack: error.stack });
         return res.status(500).json({
-            error: { errorMessage: 'Server Error' }
+            success: false,
+            message: "Server Error",
+            errors: [error.message]
         });
     }
 };
@@ -136,7 +156,9 @@ module.exports.createMessage = async (req, res) => {
     if (req.userId != senderId) {
         logger.warn(`Sender mismatch: req.userId=${req.userId} != senderId=${senderId}`);
         return res.status(403).json({
-            errors: { errorMessage: "Sender ID does not match authenticated user" }
+            success: false,
+            message: "Forbidden: sender ID does not match authenticated user",
+            errors: [`authenticated user: ${req.userId}, sender: ${senderId}`]
         });
     };
 
@@ -144,7 +166,9 @@ module.exports.createMessage = async (req, res) => {
         if (type === 'image' && !req.file.filename) {
             logger.warn(`Missing image for non-text message from user ${senderId}`);
             return res.status(400).json({
-                errors: { errorMessage: 'Image is required for this message type' }
+                success: false,
+                message: 'Image is required for this message type',
+                errors: ['No image file in the request']
             });
         }
         const message = await Message.create({
@@ -170,13 +194,16 @@ module.exports.createMessage = async (req, res) => {
         };
         res.status(200).json({
             success: true,
+            message: "Message created successfully",
             data: resData
         });
     }
     catch (error) {
         logger.error(`createMessage error for user ${senderId}: ${error.message}`, { chatId, stack: error.stack });
         return res.status(500).json({
-            error: { errorMessage: 'Server Error' }
+            success: false,
+            message: "Server Error",
+            errors: [error.message]
         });
     }
 };
@@ -188,20 +215,29 @@ module.exports.updateMessageStatus = async (req, res) => {
         const message = await Message.findById(msgId).lean();
         if (!message) {
             logger.warn(`Message not found: msgId=${msgId}`);
-            return res.status(404).json({ success: false, message: 'Message not found' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Message not found',
+                errors: [`Message(${msgId}) not found`] 
+            });
         }
 
         const chat = await Chat.findById(message.chatId).select('members').lean();
         if (!chat) {
             logger.warn(`Chat not found for message: msgId=${msgId}, chatId=${message.chatId}`);
-            return res.status(404).json({ success: false, message: 'Chat not found' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Chat not found',
+                errors: [`Chat(${message.chatId}) not found`] 
+            });
         }
 
         if (!chat.members.map(id => id.toString()).includes(req.userId)) {
             logger.warn(`Unauthorized status update: user ${req.userId} not in chat ${chat._id}`);
             return res.status(403).json({
                 success: false,
-                message: 'You are not a member of this chat.'
+                message: 'Forbidden: You are not a member of this chat.',
+                errors: [[`User ${req.userId} is not in [${chat.members.join(', ')}]`]]
             });
         }
 
@@ -224,6 +260,7 @@ module.exports.updateMessageStatus = async (req, res) => {
         };
         res.status(200).json({
             success: true,
+            message: 'Message status updated successfully',
             data: resData
         });
     } catch (error) {
@@ -234,7 +271,8 @@ module.exports.updateMessageStatus = async (req, res) => {
         });
         res.status(500).json({
             success: false,
-            message: 'Server error while updating message status',
+            message: "Server Error",
+            errors: [error.message]
         });
     }
 };

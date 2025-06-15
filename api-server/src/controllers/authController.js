@@ -1,56 +1,13 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const validator = require('validator');
 const User = require('../models/User');
 const logger = require('../config/logger');
+const { 
+    validateRegistrationFields,
+    validateLoginFields,
+    createAuthToken
+} = require("./utils");
 
-function validateRegistrationFields(fields, file) {
-    const { userName, email, password, confirmPassword } = fields;
-    const errors = [];
-
-    if (!userName) errors.push("User name is required");
-    if (!email) errors.push("Email is required");
-    else if (!validator.isEmail(email)) errors.push("Email is not valid");
-
-    if (!password) errors.push("Password is required");
-    else if (password.length < 6) errors.push("Password must be at least 6 characters");
-
-    if (!confirmPassword) errors.push("Confirm password is required");
-    else if (password !== confirmPassword) errors.push("Password and confirm password do not match");
-
-    if (!file) errors.push('Image is required');
-
-    return errors;
-}
-
-function validateLoginFields({ email, password }) {
-    const errors = [];
-
-    if (!email) errors.push("Please provide your Email");
-    else if (!validator.isEmail(email)) errors.push("Please provide a valid Email");
-
-    if (!password) errors.push("Please provide your Password");
-
-    return errors;
-}
-
-function createAuthToken(user) {
-    const userData = {
-        _id: user._id,
-        userName: user.userName,
-        email: user.email,
-        avatar: user.avatar,
-        createdAt: user.createdAt || new Date(Date.now())
-    }
-    const token = jwt.sign(
-        userData,
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.TOKEN_EXP }
-    );
-    return token
-}
-
-module.exports.registerUser = async (req, res) => {
+async function registerUser(req, res){
     try {
         const validationErrors = validateRegistrationFields(req.body, req.file || {});
         if (validationErrors.length > 0) {
@@ -110,10 +67,9 @@ module.exports.registerUser = async (req, res) => {
     }
 };
 
-module.exports.loginUser = async (req, res) => {
+async function loginUser(req, res){
     const { email, password } = req.body;
     const validationErrors = validateLoginFields({ email, password });
-
     if (validationErrors.length > 0) {
         logger.warn(`Login failed: Validation errors - ${validationErrors.join(' | ')}`);
         return res.status(400).json({
@@ -135,7 +91,6 @@ module.exports.loginUser = async (req, res) => {
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-
         if (!isPasswordValid) {
             logger.warn(`Login failed: Invalid password for email (${email})`);
             return res.status(400).json({
@@ -160,6 +115,7 @@ module.exports.loginUser = async (req, res) => {
             data: { token }
         });
     } catch (error) {
+        console.log('mocked error:', error);
         logger.error("Login error:", error);
         return res.status(500).json({
             success: false,
@@ -169,7 +125,7 @@ module.exports.loginUser = async (req, res) => {
     }
 };
 
-module.exports.logoutUser = (req, res) => {
+function logoutUser(req, res){
     const expiredCookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -192,3 +148,9 @@ module.exports.logoutUser = (req, res) => {
             message: "Logout successful",
         });
 };
+
+module.exports = {
+    registerUser,
+    loginUser,
+    logoutUser
+}

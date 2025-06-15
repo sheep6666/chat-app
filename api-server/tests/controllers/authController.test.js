@@ -74,6 +74,19 @@ describe('registerUser', () => {
             data: { token: 'mockToken' }
         }));
     });
+
+    it('should return 500 if an unexpected error occurs', async () => {
+        User.findOne.mockRejectedValue(new Error('Database failure'));
+
+        await auth.registerUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: false,
+        message: "Server error during registration",
+        errors: expect.arrayContaining(["Database failure"])
+        }));
+    });
 });
 
 describe('logoutUser', () => {
@@ -198,4 +211,19 @@ describe('loginUser', () => {
             data: { token: 'mockToken' }
         }));
     });
+
+    it('should return 500 if an unexpected error occurs', async () => {
+        User.findOne.mockReturnValue({
+        select: jest.fn().mockRejectedValue(new Error('Database failure')),
+        });
+        await auth.loginUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: false,
+        message: "Internal server error",
+        errors: expect.arrayContaining(["Database failure"])
+        }));
+    });
+
 });

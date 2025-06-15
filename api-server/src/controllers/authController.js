@@ -58,7 +58,7 @@ async function registerUser(req, res){
             data: { token }
         });
     } catch (error) {
-        console.error(error);
+        logger.error(error.message);
         return res.status(500).json({
             success: false,
             message: "Server error during registration",
@@ -115,8 +115,7 @@ async function loginUser(req, res){
             data: { token }
         });
     } catch (error) {
-        console.log('mocked error:', error);
-        logger.error("Login error:", error);
+        logger.error(error.message);
         return res.status(500).json({
             success: false,
             message: "Internal server error",

@@ -47,7 +47,7 @@ async function registerUser(req, res){
         const cookieOptions = {
             expires: new Date(Date.now() + process.env.COOKIE_EXP * 24 * 60 * 60 * 1000),
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV === 'prod',
             sameSite: 'lax'
         };
 
@@ -105,7 +105,7 @@ async function loginUser(req, res){
         const cookieOptions = {
             expires: new Date(Date.now() + process.env.COOKIE_EXP * 24 * 60 * 60 * 1000),
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV === 'prod',
             sameSite: 'lax'
         };
         logger.info(`User logged in: ${email} (ID: ${user._id})`);
@@ -127,7 +127,7 @@ async function loginUser(req, res){
 function logoutUser(req, res){
     const expiredCookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'prod',
         sameSite: 'lax',
         expires: new Date(0), // 設定為過期時間
     };

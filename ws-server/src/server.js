@@ -7,7 +7,7 @@ const logger = require('./config/logger');
 
 const redis = new Redis(process.env.REDIS_URL);
 
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 const EVENT = {
   SERVER_ACTIVE_USERS: "server:active_users",
   CLIENT_USER_JOINED: "connection",
@@ -25,10 +25,12 @@ const EVENT = {
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: '*',
+  cors: process.env.NODE_ENV === 'dev' 
+    ? {
+        origin: '*', 
         methods: ['GET', 'POST'],
-    }
+      }
+    : false 
 });
 
 // User Management

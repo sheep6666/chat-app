@@ -1,0 +1,44 @@
+name: Deploy Chat App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚀 Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/chat-app
+            git fetch origin
+            git reset --hard origin/main
+
+            # Generate .env for API
+            echo "NODE_ENV=dev" > api-server/.env
+            echo "PORT=5001" >> api-server/.env
+            echo "DATABASE_URL='${{ secrets.MONGODB_ATLAS_URL }}'" >> api-server/.env
+            echo "ALLOWED_ORIGINS='http://35.206.240.210'" >> api-server/.env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> api-server/.env
+            echo "TOKEN_EXP=7d" >> api-server/.env
+            echo "COOKIE_EXP=7" >> api-server/.env
+
+            # Generate .env for WS-server
+            echo "NODE_ENV=dev" > ws-server/.env
+            echo "ALLOWED_ORIGINS='http://35.206.240.210'" >> ws-server/.env
+            echo "REDIS_URL='${{ secrets.REDIS_CLOUD_URL }}'" >> ws-server/.env
+
+            # Generate .env for Web Client
+            echo "VITE_API_BASE_URL=/api" > web-client/.env
+            echo "VITE_WEBSOCKET_URL=/" >> web-client/.env
+            echo "VITE_STATIC_URL=/uploads" >> web-client/.env
+
+            docker compose up --build --force-recreate -d
+

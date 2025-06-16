@@ -20,7 +20,7 @@ import {
 } from '../store/chatSlice';
 import notificationSound from '../audio/notification.mp3'
 import SOCKET_EVENTS from "../socketEvents";
-import { escape } from 'lodash';
+import env from '@/config';
 
 const Messenger = () => {
     const dispatch = useDispatch();
@@ -84,7 +84,8 @@ const Messenger = () => {
     }, [chatMap, isSocketReady, selectedUserId])
 
     useEffect(() => {
-        socket.current = io(`http://localhost:8000`, {
+        socket.current = io(env.VITE_WEBSOCKET_URL, {
+            path: '/ws/socket.io',
             auth: {userId: currentUser._id, userName: currentUser.userName}
         });
         

@@ -21,14 +21,25 @@ const EVENT = {
   CLIENT_MESSAGE_UPDATED: "client:message_updated",
   SERVER_MESSAGE_UPDATED: "server:message_updated",
 };
-
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : [];
+  
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: process.env.NODE_ENV === 'dev' 
+  path: '/ws/socket.io',
+  cors: allowedOrigins.length > 0
     ? {
-        origin: '*', 
+        origin: (origin, callback) => {
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error(`Origin ${origin} not allowed by socket.io CORS`));
+          }
+        },
         methods: ['GET', 'POST'],
+        credentials: true
       }
     : false 
 });

@@ -18,20 +18,19 @@ const PORT = process.env.PORT || 5001;
 const app = express();
 
 // CORS setup - allows front-end origin and credentials
-if (process.env.NODE_ENV === 'dev'){
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').filter(Boolean) || [];
-  app.use(cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error(`${origin} Not allowed by CORS`));
-      }
-    },
-    credentials: true
-  }));
-}
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').filter(Boolean) || [];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error(`${origin} Not allowed by CORS`));
+    }
+  },
+  credentials: true
+}));
+
 
 // Middlewares
 app.use(morgan(':method :url :status :response-time ms', { 

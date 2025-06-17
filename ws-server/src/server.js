@@ -29,19 +29,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   path: '/ws/socket.io',
-  cors: allowedOrigins.length > 0
-    ? {
-        origin: (origin, callback) => {
-          if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-          } else {
-            callback(new Error(`Origin ${origin} not allowed by socket.io CORS`));
-          }
-        },
-        methods: ['GET', 'POST'],
-        credentials: true
-      }
-    : false 
+  cors: {
+    origin: allowedOrigins.length > 0 ? allowedOrigins : false,
+    methods: ['GET', 'POST']
+  }
 });
 
 // User Management
@@ -79,6 +70,8 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
     const socketId = socket.id;
     const userId = socket.handshake.auth.userId;
     const userName = socket.handshake.auth.userName;
+    const avatar = socket.handshake.auth.avatar;
+    const createdAt = socket.handshake.auth.createdAt;
     logger.info(`Receive CLIENT_USER_JOINED from ${userName}`);
 
     await addUser(userId, socketId, userName);
@@ -89,7 +82,7 @@ io.on(EVENT.CLIENT_USER_JOINED, async (socket) => {
       logger.error(`Failed to get active users: ${err}`);
       socket.emit(EVENT.SERVER_ACTIVE_USERS, []);
     }
-    socket.broadcast.emit(EVENT.SERVER_USER_JOINED, { senderId: userId });
+    socket.broadcast.emit(EVENT.SERVER_USER_JOINED, { userId, userName, avatar, createdAt });
 
     socket.on(EVENT.CLIENT_USER_TYPING, async (data) => {
         const { senderId, receiverIds, chatId } = data;

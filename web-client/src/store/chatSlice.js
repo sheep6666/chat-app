@@ -156,6 +156,15 @@ const chatSlice = createSlice({
       state.chatMap[chat._id] = chat; 
       state.chatUsers[userId] = chat._id;
     },
+    updateUserMap: (state, action) => {
+      const {userId, userName, avatar, createdAt} = action.payload;
+      state.userMap[userId] = {
+        _id: userId,
+        userName: userName,
+        avatar: avatar,
+        createdAt: createdAt
+      }; 
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -217,6 +226,7 @@ export const {
   clearMessage,
   setIsUserTyping,
   setOnlineUserMap,
+  updateUserMap,
   updateOnlineUserMap,
   clearIsMessageSent,
   updateCurrentMessage, 

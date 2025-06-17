@@ -11,6 +11,7 @@ import {
     setChatUsers, 
     setIsUserTyping, 
     setOnlineUserMap, 
+    updateUserMap,
     updateOnlineUserMap, 
     updateCurrentMessage,
     updateChatLastMessage,
@@ -84,9 +85,14 @@ const Messenger = () => {
     }, [chatMap, isSocketReady, selectedUserId])
 
     useEffect(() => {
-        socket.current = io(env.VITE_WEBSOCKET_URL, {
+        socket.current = io(env.WEBSOCKET_URL, {
             path: '/ws/socket.io',
-            auth: {userId: currentUser._id, userName: currentUser.userName}
+            auth: {
+                userId: currentUser._id, 
+                userName: currentUser.userName, 
+                avatar: currentUser.avatar, 
+                createdAt: currentUser.createdAt
+            }
         });
         
         // =======================================================================
@@ -99,7 +105,8 @@ const Messenger = () => {
         });
         //  A user has come online
         socket.current.on(SOCKET_EVENTS.SERVER_USER_JOINED, (data)=>{
-            dispatch(updateOnlineUserMap({[data.senderId]: true}));  
+            dispatch(updateOnlineUserMap({[data.userId]: true})); 
+            dispatch(updateUserMap(data)); 
         })
         // A user has gone offline
         socket.current.on(SOCKET_EVENTS.SERVER_USER_LEFT, (data)=>{

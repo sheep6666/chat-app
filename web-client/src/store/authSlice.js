@@ -28,7 +28,6 @@ const getValidDecodedToken = () => {
 export const userRegister = createAsyncThunk(
   'auth/userRegister',
   async (formData, { rejectWithValue }) => {
-    console.log("userRegister")
     try {
       const reqConfig = { headers: { 'Content-Type': 'multipart/form-data' }, withCredentials: true };
       const res = await axios.post(`${env.API_BASE_URL}/auth/users`, formData, reqConfig);

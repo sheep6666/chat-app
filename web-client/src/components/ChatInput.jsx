@@ -48,7 +48,7 @@ const MesageSend = ({socket, currentUser, chat}) => {
         if (chat) {
             dispatch(sendMessage(data));
         } else {
-            dispatch(createChatAndSendMessage({ members: [myInfo._id, user._id], message: data }));
+            dispatch(createChatAndSendMessage({ members: [selectedUserId, currentUser._id], message: data }));
         }
     }
     const onSendImageMessage = (e) => {
@@ -62,7 +62,7 @@ const MesageSend = ({socket, currentUser, chat}) => {
         if (chat) {
             dispatch(sendMessage(data));
         } else {
-            dispatch(createChatAndSendMessage({ members: [myInfo._id, user._id], message: data }));
+            dispatch(createChatAndSendMessage({ members: [selectedUserId, currentUser._id], message: data }));
         }
     }
     const onKeyDown = (e) => {

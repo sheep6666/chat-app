@@ -1,5 +1,6 @@
 *.env
 api-server/uploads/*
+*.DS_Store
 
 # Logs
 logs

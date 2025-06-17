@@ -25,14 +25,14 @@ jobs:
             echo "NODE_ENV=dev" > api-server/.env
             echo "PORT=5001" >> api-server/.env
             echo "DATABASE_URL='${{ secrets.MONGODB_ATLAS_URL }}'" >> api-server/.env
-            echo "ALLOWED_ORIGINS='http://35.206.240.210'" >> api-server/.env
+            echo "ALLOWED_ORIGINS='${{ secrets.EC2_HOST }}'" >> api-server/.env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> api-server/.env
             echo "TOKEN_EXP=7d" >> api-server/.env
             echo "COOKIE_EXP=7" >> api-server/.env
 
             # Generate .env for WS-server
             echo "NODE_ENV=dev" > ws-server/.env
-            echo "ALLOWED_ORIGINS='http://35.206.240.210'" >> ws-server/.env
+            echo "ALLOWED_ORIGINS='${{ secrets.EC2_HOST }}'" >> ws-server/.env
             echo "REDIS_URL='${{ secrets.REDIS_CLOUD_URL }}'" >> ws-server/.env
 
             # Generate .env for Web Client

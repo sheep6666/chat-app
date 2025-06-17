@@ -9,6 +9,7 @@ import {
     getUsers, 
     getChats, 
     setChatUsers, 
+    setChatUsersInitialized,
     setIsUserTyping, 
     setOnlineUserMap, 
     updateUserMap,
@@ -27,7 +28,7 @@ const Messenger = () => {
     const dispatch = useDispatch();
     const [notificationSPlay] = useSound(notificationSound)
     const { currentUser } = useSelector(state => state.auth);
-    const { userMap, chatMap, selectedUserId } = useSelector(state => state.chat);
+    const { userMap, chatMap, selectedUserId, chatUsersInitialized } = useSelector(state => state.chat);
     const [theme, setTheme] = useState('light');
     const [isSocketReady, setIsSocketReady] = useState(false);
     const socket = useRef();
@@ -55,18 +56,19 @@ const Messenger = () => {
 
     useEffect(()=>{
             if (!userMap || !chatMap) return;
-            if (selectedUserId) return;
-            const userChats = {}
+            if (chatUsersInitialized) return;
+            const chatUsers = {}
             Object.values(userMap).forEach(user => {
                 if (user._id === currentUser._id) return;
-                userChats[user._id] = null
+                chatUsers[user._id] = null
             })
             Object.values(chatMap).forEach(chat => {
                 const targetUser = chat.members.find(member=>member._id !== currentUser._id)
-                userChats[targetUser._id] = chat._id
+                chatUsers[targetUser._id] = chat._id
             })
-            dispatch(setChatUsers(userChats));
-        }, [userMap, chatMap, selectedUserId])
+            dispatch(setChatUsers(chatUsers));
+            dispatch(setChatUsersInitialized(true));
+        }, [userMap, chatMap, chatUsersInitialized])
 
     useEffect(() => {
         if(!isSocketReady || !chatMap) return;

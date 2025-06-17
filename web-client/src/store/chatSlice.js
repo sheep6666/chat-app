@@ -95,9 +95,10 @@ export const updateMessageStatusDB = createAsyncThunk(
 // ==============================
 const initialState = {
   onlineUserMap: {},
-  userMap: {},
-  chatMap: {},
+  userMap: null,
+  chatMap: null,
   chatUsers: {},
+  chatUsersInitialized: false,
   selectedUserId: null,
   messages: [],
   draftMessage: '',
@@ -147,6 +148,9 @@ const chatSlice = createSlice({
         ...state.chatMap[newObj.chatId], 
         lastMessage: newObj
       }
+    },
+    setChatUsersInitialized: (state, action) => {
+      state.chatUsersInitialized=action.payload; 
     },
     pushMessage: (state, action) => {
       state.messages.push(action.payload); 
@@ -210,7 +214,8 @@ const chatSlice = createSlice({
         
         const updatedChat = {...chat, lastMessage: message}
         state.chatMap = {...state.chatMap, [updatedChat._id]: updatedChat} 
-        state.chatUsers = {...state.chatMap, [message.senderId]: updatedChat._id} 
+        const receiverId = chat.members.find(o=>o!==message.senderId)
+        state.chatUsers = {...state.chatUsers, [receiverId]: updatedChat._id}  
         state.draftMessage = '';
         state.isMessageSent = true;
       })
@@ -223,6 +228,7 @@ export const {
   setSelectedUserId,
   setDraftMessage,
   setChatUsers,
+  setChatUsersInitialized,
   clearMessage,
   setIsUserTyping,
   setOnlineUserMap,

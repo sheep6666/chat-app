@@ -60,10 +60,11 @@ const MesageSend = ({socket, currentUser, chat}) => {
         formData.append('type', "image");
         formData.append('image', e.target.files[0]);
         if (chat) {
-            dispatch(sendMessage(data));
+            dispatch(sendMessage(formData));
         } else {
-            dispatch(createChatAndSendMessage({ members: [selectedUserId, currentUser._id], message: data }));
+            dispatch(createChatAndSendMessage({ members: [selectedUserId, currentUser._id], message: formData }));
         }
+        e.target.value = ''
     }
     const onKeyDown = (e) => {
         if (e.key === 'Enter' && !isComposing.current) {

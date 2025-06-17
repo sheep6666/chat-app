@@ -9,13 +9,10 @@ const ChatCard = ({ userId }) => {
   const { currentUser } = useSelector(state => state.auth);
   const { selectedUserId } = useSelector(state => state.chat);
   const chatId = useSelector(state => state.chat.chatUsers?.[userId]);
-  if(chatId === undefined) return null;
-  
   const chat = useSelector(state => state.chat.chatMap?.[chatId]);
   const user = useSelector(state => state.chat.userMap?.[userId]);
   const isOnline = useSelector(state => state.chat.onlineUserMap?.[userId]);
   const lastMessage = chat?.lastMessage;
-
   const handleClick = () => {
     dispatch(setSelectedUserId(user._id));
   }
@@ -51,8 +48,7 @@ const ChatCard = ({ userId }) => {
             return <div className="seen-icon"></div>
         }
     }
-  }
-
+  } 
   return (
     <div className={user._id===selectedUserId?'hover-friend active' : 'hover-friend'} onClick={handleClick}>
       <div className="friend">
